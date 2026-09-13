@@ -22,7 +22,7 @@ export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
         }
     }, [isloading, user, router])
 
-    if (!isloading && !user || isloading && !user) return <AuthLoader />
+    if (isloading) return <AuthLoader />
 
     return <>{children}</>
 }

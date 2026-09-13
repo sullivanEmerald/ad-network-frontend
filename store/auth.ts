@@ -23,7 +23,7 @@ export const createAuthSlice: StateCreator<Store, [["zustand/immer", never]], []
     authState: {
         isLoading: false,
         isAuthenticated: false,
-        isRefreshingUser: false,
+        isRefreshingUser: true
     },
     login: async (credentials) => {
         set((state) => {
@@ -62,6 +62,7 @@ export const createAuthSlice: StateCreator<Store, [["zustand/immer", never]], []
             const refreshedUser: User | null = user;
             set((state) => {
                 state.user = refreshedUser;
+                state.authState.isAuthenticated = Boolean(refreshedUser);
             });
             return refreshedUser;
         } catch (error) {

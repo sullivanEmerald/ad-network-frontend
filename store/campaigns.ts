@@ -1,20 +1,22 @@
 import { StateCreator } from "zustand";
 import { FullCampaignData } from "@/lib/schemas/campaign-schema";
 import { Store } from "@/types/store";
-import { createCampaign, getAllDrafts, saveCampaignDraft, getDraftById } from '@/services/campaign';
-import { CampaignDraft } from "@/types/campaign";
+import { createCampaign, getAllDrafts, getCampaigns as getCampaignsRequest, saveCampaignDraft, getDraftById, createDraft } from '@/services/campaign';
+import { CampaignDraft, CampaignRecord } from "@/types/campaign";
 import { showToaster } from "@/components/common/toast";
 
 
 export type CampaignSlice = {
     campaignDraft: FullCampaignData | null;
+    campaigns: Array<Partial<CampaignRecord> & { id: string }>;
     drafts: Array<Partial<CampaignDraft> & { id: string; currentStep: number; completedSteps: number[]; lastSavedAt: string | null, status: string }>;
     setCampaignDraft: (draft: FullCampaignData) => void;
     updateCampaignDraft: (updates: Partial<FullCampaignData>) => void;
     clearCampaignDraft: () => void;
-    createCampaign: (draft: FullCampaignData) => Promise<void>;
+    createCampaign: (draft: FullCampaignData, draftId: string | null, status: string) => Promise<void>;
     createDraft: (draft: Partial<CampaignDraft>, draftId?: string | null, status?: string) => Promise<void>;
     getCampaignDrafts: () => Promise<void>;
+    getCampaigns: () => Promise<void>;
     getDraftById: (draftId: string) => Promise<CampaignDraft | null>;
     setDraftId: (draftId: string | null) => void;
     draftId: string | null;
@@ -24,11 +26,13 @@ export type CampaignSlice = {
         isCreating: false,
         isfetching: false,
         isFetchingDraft: false,
+        isGettingCampaigns: false
     }
 };
 
 export const createCampaignSlice: StateCreator<Store, [['zustand/immer', never]], [], CampaignSlice> = (set: any): CampaignSlice => ({
     campaignDraft: null,
+    campaigns: [],
     drafts: [],
     draftId: null,
     campaignState: {
@@ -36,6 +40,7 @@ export const createCampaignSlice: StateCreator<Store, [['zustand/immer', never]]
         isCreating: false,
         isfetching: false,
         isFetchingDraft: false,
+        isGettingCampaigns: false
     },
     setCampaignDraft: (draft) => set({ campaignDraft: draft }),
     updateCampaignDraft: (updates) => {
@@ -61,7 +66,7 @@ export const createCampaignSlice: StateCreator<Store, [['zustand/immer', never]]
         });
     },
     clearCampaignDraft: () => set({ campaignDraft: null }),
-    createCampaign: async (draft, status = "draft", id?: string) => {
+    createCampaign: async (draft, draftId, status) => {
         set((state: { campaignState: any }) => ({
             campaignState: {
                 ...state.campaignState,
@@ -69,7 +74,8 @@ export const createCampaignSlice: StateCreator<Store, [['zustand/immer', never]]
             },
         }));
         try {
-            const response = await saveCampaignDraft(draft);
+            const response = await saveCampaignDraft(draft, draftId, status);
+            showToaster("Campaign Launched", "success");
             return response;
         } catch (error) {
             console.error("Error auto-saving campaign:", error);
@@ -105,7 +111,29 @@ export const createCampaignSlice: StateCreator<Store, [['zustand/immer', never]]
             }));
         }
     },
-    createDraft: async (draft, draftId?: string | null, status: string = "draft") => {
+    getCampaigns: async () => {
+        set((state: { campaignState: any }) => ({
+            campaignState: {
+                ...state.campaignState,
+                isGettingCampaigns: true,
+            },
+        }));
+
+        try {
+            const response = await getCampaignsRequest();
+            set({ campaigns: response });
+        } catch (error) {
+            console.error("Error fetching campaigns:", error);
+        } finally {
+            set((state: { campaignState: any }) => ({
+                campaignState: {
+                    ...state.campaignState,
+                    isGettingCampaigns: false,
+                },
+            }));
+        }
+    },
+    createDraft: async (draft, draftId, status) => {
         set((state: { campaignState: any }) => ({
             campaignState: {
                 ...state.campaignState,
@@ -113,7 +141,7 @@ export const createCampaignSlice: StateCreator<Store, [['zustand/immer', never]]
             },
         }));
         try {
-            const response = await saveCampaignDraft(draft, draftId, status);
+            const response = await createDraft(draft, draftId, status);
             showToaster("Draft saved successfully!", "success");
             return response;
         } catch (error) {
@@ -136,10 +164,9 @@ export const createCampaignSlice: StateCreator<Store, [['zustand/immer', never]]
             },
         }));
         try {
-            const draft = await getDraftById(draftId);
-            console.log("Fetched draft by ID:", draft);
-            set({ campaignDraft: { ...draft } });
-            return draft;
+            const response = await getDraftById(draftId);
+            set({ campaignDraft: { ...response } });
+            return response;
         } catch (error) {
             console.error("Error fetching campaign draft by ID:", error);
             throw error;

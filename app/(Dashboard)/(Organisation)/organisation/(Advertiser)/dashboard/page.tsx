@@ -25,7 +25,7 @@ export default function CampaignsPage() {
     return (
         <div className="">
             <div className="flex items-center justify-between mb-4">
-                <CampaignHeader title="Campaigns" description="Overview of your advertising activity." />
+                <CampaignHeader title="Overview" description="Overview of your advertising activity." />
                 <Button
                     onClick={() => { router.push("/organisation/campaign/new") }}
                     className=""

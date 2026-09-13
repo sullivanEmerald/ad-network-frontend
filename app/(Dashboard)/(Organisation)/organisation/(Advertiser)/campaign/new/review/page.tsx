@@ -28,16 +28,14 @@ import CampaignHeader from "@/components/campaign/header";
 const DRAFT_ID = "we23423n4k2nkl2l";
 
 export default function ReviewStep() {
-    const { draft, createDraft, isCreating, draftId } = useStore(useShallow((state) => ({
+    const { draft, createCampaign, isCreating, draftId } = useStore(useShallow((state) => ({
         draft: state.campaignDraft,
-        createDraft: state.createDraft,
+        createCampaign: state.createCampaign,
         isCreating: state.campaignState.isCreating,
         draftId: state.draftId,
     })));
     const router = useRouter();
-    const [launching, setLaunching] = useState(false);
-    const [submitError, setSubmitError] = useState<string | null>(null);
-    const [dismissedWarnings, setDismissedWarnings] = useState<string[]>([]);
+
 
     const schemaResult = useMemo(() => fullCampaignSchema.safeParse(draft), [draft]);
     const canLaunch = schemaResult.success;
@@ -45,8 +43,6 @@ export default function ReviewStep() {
     function editStep(path: string) {
         router.push(`/campaign/new${path}?draftId=${DRAFT_ID}`);
     }
-
-    const accountId = localStorage.getItem("accountId") || "";
 
     return (
         <div className="mx-auto max-w-6xl pb-10">
@@ -115,11 +111,11 @@ export default function ReviewStep() {
                         <button
                             type="button"
                             disabled={!canLaunch || isCreating}
-                            onClick={() => draft && createDraft(draft, draftId, "active")}
+                            onClick={() => draft && createCampaign(draft, draftId, "active")}
                             className="mt-7 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-ink-950 transition hover:bg-primary/80 disabled:cursor-not-allowed disabled:opacity-40"
                         >
-                            {launching ? "Launching..." : "Launch campaign"}
-                            {!launching && <ChevronRight className="h-4 w-4" />}
+                            {isCreating ? "Launching..." : "Launch campaign"}
+                            {!isCreating && <ChevronRight className="h-4 w-4" />}
                         </button>
                         <button type="button" onClick={() => router.back()} className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white">
                             <ArrowLeft className="h-4 w-4" />

@@ -52,6 +52,9 @@ export default function ObjectiveStep() {
         }
     }, [draft, reset]);
 
+
+    console.log('New Draft', draft)
+
     return (
         <div>
             <Field label="Campaign name" htmlFor="campaignName" error={errors.campaignName?.message}>

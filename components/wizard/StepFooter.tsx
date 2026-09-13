@@ -37,7 +37,6 @@ export function StepFooter({ currentStepId, onNext, nextLabel = "Next" }: StepFo
 
     async function handleSaveDraft() {
         if (!draft) return;
-
         await createDraft(draft, draftId, "draft");
         router.push(organisationEndpoints.campaigns);
     }
@@ -48,7 +47,8 @@ export function StepFooter({ currentStepId, onNext, nextLabel = "Next" }: StepFo
         // markStepComplete(currentStepId);
         // await saveNow();
         if (nextStep) {
-            router.push(`/organisation/campaign/new${nextStep.path}?draftId=${draftId}`);
+            const draftQuery = draftId ? `?draftId=${draftId}` : "";
+            router.push(`/organisation/campaign/new${nextStep.path}${draftQuery}`);
         }
     }
 
