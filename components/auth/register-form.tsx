@@ -45,7 +45,6 @@ export default function RegisterForm() {
     });
 
     const onSubmit = async (registerData: RegisterInput) => {
-        alert(JSON.stringify(registerData, null, 2));
         const { confirmPassword: _confirmPassword, ...registrationPayload } = registerData;
         void _confirmPassword;
         const response = await Register(registrationPayload);
