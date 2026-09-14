@@ -6,7 +6,7 @@ import { useStore } from "@/store/store";
 import SystemLayout from "@/components/campaign/layout";
 import CampaignHeader from "@/components/campaign/header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import CampaignCard from "./components/card";
+import CampaignCard from "./components/campaignCard";
 import { useCampaign } from "./hooks/useCampaign";
 import DraftCard from "./components/draftCard";
 import ActiveCard from "./components/activeCard";

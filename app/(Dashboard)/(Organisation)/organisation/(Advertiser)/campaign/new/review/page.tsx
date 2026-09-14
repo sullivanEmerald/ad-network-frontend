@@ -111,7 +111,11 @@ export default function ReviewStep() {
                         <button
                             type="button"
                             disabled={!canLaunch || isCreating}
-                            onClick={() => draft && createCampaign(draft, draftId, "active")}
+                            onClick={async () => {
+                                if (!draft) return;
+                                await createCampaign(draft, draftId, "active")
+                                router.push('/organisation/campaigns')
+                            }}
                             className="mt-7 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-ink-950 transition hover:bg-primary/80 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                             {isCreating ? "Launching..." : "Launch campaign"}
