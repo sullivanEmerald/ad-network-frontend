@@ -11,34 +11,12 @@ import { Loader } from "@/components/common/loader";
 import { useRouter } from "next/navigation";
 import { organisationEndpoints } from "@/endpoints/organisation";
 import { bannerEndpoints } from "@/endpoints/banner";
+import CampaignActions from "./campaignActions";
+import { formatDate, formatLabel, formatGeo, formatDevices } from "./helpers/campaign-helpers";
 
 type CampaignCardProps = {
     items: Array<Partial<CampaignRecord> & { id: string }>;
 };
-
-function formatDate(value?: string | Date | null) {
-    if (!value) return "Not set";
-
-    const date = new Date(value);
-    return Number.isNaN(date.getTime())
-        ? "Not set"
-        : date.toLocaleDateString(undefined, { dateStyle: "medium" });
-}
-
-function formatLabel(value?: string | null) {
-    if (!value) return "Not set";
-    return value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
-
-function formatGeo(geo?: CampaignRecord["geo"]) {
-    if (!geo?.length) return "Not set";
-    return geo.map((location) => location.label).join(", ");
-}
-
-function formatDevices(devices?: CampaignRecord["devices"]) {
-    if (!devices?.length) return "Not set";
-    return devices.map(formatLabel).join(", ");
-}
 
 function Detail({ label, value }: { label: string; value: React.ReactNode }) {
     return (
@@ -49,6 +27,8 @@ function Detail({ label, value }: { label: string; value: React.ReactNode }) {
     );
 }
 
+
+
 export default function ActiveCard({ items }: CampaignCardProps) {
     const { isloading } = useCampaign();
     const router = useRouter();
@@ -56,6 +36,10 @@ export default function ActiveCard({ items }: CampaignCardProps) {
     const createCampaign = () => {
         router.push('/organisation/campaign/new')
     }
+
+    const addBanners = (id: string) => [
+        router.push(bannerEndpoints.campaignBanner(id))
+    ]
 
     return (
         <>
@@ -88,7 +72,7 @@ export default function ActiveCard({ items }: CampaignCardProps) {
                                             className={cn(
                                                 "shrink-0 rounded-full px-2 py-1 text-xs capitalize",
                                                 statusLabel === "Active" || statusLabel === "Scheduled"
-                                                    ? "bg-primary/20 text-primary"
+                                                    ? "bg-green-600 text-white"
                                                     : "bg-white/10 text-gray-300"
                                             )}
                                         >
@@ -102,17 +86,7 @@ export default function ActiveCard({ items }: CampaignCardProps) {
                                     <Detail label="Locations" value={formatGeo(campaign.geo)} />
                                     <Detail label="Devices" value={formatDevices(campaign.devices)} />
                                     <div className="flex w-full items-center justify-between sm:col-span-2">
-                                        <Button
-                                            className=""
-                                            onClick={() => router.push(bannerEndpoints.campaignBanner(campaign.id))}
-                                        >
-                                            Add Banners
-                                        </Button>
-                                        <CampaignDialog
-                                            campaign={campaign}
-                                            budget={budget}
-                                            triggerLabel="Manage"
-                                        />
+                                        <CampaignActions campaign={campaign} budget={budget} buttonOnClick={() => addBanners(campaign.id)} triggerLabel='Manage' />
                                     </div>
                                 </CardContent>
                             </Card>
