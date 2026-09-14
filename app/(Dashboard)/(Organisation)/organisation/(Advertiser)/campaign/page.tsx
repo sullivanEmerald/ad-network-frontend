@@ -8,6 +8,8 @@ import CampaignHeader from "@/components/campaign/header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import CampaignCard from "./components/card";
 import { useCampaign } from "./hooks/useCampaign";
+import DraftCard from "./components/draftCard";
+import ActiveCard from "./components/activeCard";
 
 
 export default function AdvertiserCampaignPage() {
@@ -66,13 +68,13 @@ export default function AdvertiserCampaignPage() {
                         </TabsTrigger>
                     </TabsList>
                     <TabsContent value="active">
-                        <CampaignCard items={activeCampaigns} />
+                        <ActiveCard items={activeCampaigns} />
                     </TabsContent>
                     <TabsContent value="schedule">
                         <CampaignCard items={scheduledCampaigns} />
                     </TabsContent>
                     <TabsContent value="drafts">
-                        <CampaignCard items={draftCampaigns} />
+                        <DraftCard items={draftCampaigns} />
                     </TabsContent>
                 </Tabs>
             </div>
