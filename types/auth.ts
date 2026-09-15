@@ -9,11 +9,10 @@ export type RegisterData = {
 
 export type User = {
     id?: string;
-    _id?: string;
     email?: string;
     firstName?: string;
     lastName?: string;
-    [key: string]: unknown;
+    accountType: string
 };
 
 export type LoginResponse = {

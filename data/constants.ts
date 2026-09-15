@@ -23,16 +23,24 @@ export const CAMPAIGN_MAIN_NAV = [
 
 ];
 
-const publisherLinks = [
+export const PUBLISHER_MENU_BARS = [
+    {
+        label: "Ad marketplace",
+        to: "/organisation/publisher/marketplace",
+        icon: BarChart3,
+        paths: []
+    },
     {
         label: "Websites",
-        href: "/publisher/websites",
+        to: "/organisation/publisher/websites",
         icon: Globe,
+        paths: []
     },
     {
         label: "Ad units",
-        href: "/publisher/ad-units",
+        to: "/publisher/ad-units",
         icon: BarChart3,
+        paths: []
     },
 ];
 

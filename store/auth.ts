@@ -59,9 +59,10 @@ export const createAuthSlice: StateCreator<Store, [["zustand/immer", never]], []
 
         try {
             const user = await authMe();
+            console.log(user)
             const refreshedUser: User | null = user;
             set((state) => {
-                state.user = refreshedUser;
+                state.user = user;
                 state.authState.isAuthenticated = Boolean(refreshedUser);
             });
             return refreshedUser;
