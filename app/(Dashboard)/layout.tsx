@@ -26,7 +26,6 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
         } else if (isSettings) {
             setActiveNav(CAMPAIGN_SETTINGS_NAV);
         } else {
-            alert(JSON.stringify(user, null, 2))
             if (!isPublisher) {
                 setActiveNav(CAMPAIGN_MAIN_NAV);
             } else {
