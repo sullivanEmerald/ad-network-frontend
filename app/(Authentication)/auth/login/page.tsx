@@ -15,6 +15,7 @@ import { dashboardEndpoints } from "@/endpoints/dashboard";
 import { loginSchema, LoginInput } from "@/lib/schemas/auth-schema";
 import { useStore } from "@/store/store";
 import { organisationEndpoints } from "@/endpoints/organisation";
+import { publisherEndpoints } from "@/endpoints/publisher";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -37,10 +38,11 @@ export default function LoginPage() {
 
     const onSubmit = async (credentials: LoginInput) => {
         try {
-            await login(credentials);
+            const user = await login(credentials);
             await authMe();
             showToaster("Login successful", "success");
-            router.push(organisationEndpoints.dashboard);
+            const dashboard = user?.accountType.toLowerCase() === "publisher" ? publisherEndpoints.dashboard : organisationEndpoints.dashboard
+            router.push(dashboard);
         } catch (error) {
             console.error("Login error:", error);
             const responseMessage = axios.isAxiosError(error) ? error.response?.data?.message : null;

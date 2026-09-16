@@ -31,7 +31,7 @@ export const createPublisherSlice: StateCreator<Store, [["zustand/immer", never]
             const response = await createPublisherRequest(data);
             const publisher = response?.data?.publisher ?? response?.publisher ?? response;
             set((state) => {
-                state.publisher = publisher;
+                state.publishers = [publisher, ...state.publishers];
             });
         } finally {
             set((state) => {
