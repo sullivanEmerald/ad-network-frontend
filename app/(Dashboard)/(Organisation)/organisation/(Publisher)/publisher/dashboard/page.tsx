@@ -21,9 +21,16 @@ import { publisherSchema, type PublisherFormData } from "@/lib/schemas/publisher
 import { useStore } from "@/store/store";
 import { useShallow } from "zustand/shallow";
 import Publishers from "../../components/publisher";
+import RightDialog from "@/components/common/right-dialog";
+import { DialogClose } from "@/components/ui/dialog";
+import type { Publisher } from "@/types/publisher";
+import { publisherEndpoints } from "@/endpoints/publisher";
+import { useRouter } from "next/navigation";
 
 export default function PublisherDashboardPage() {
-    const [open, setOpen] = useState(false);
+    const router = useRouter();
+    const [isAddPublisherOpen, setIsAddPublisherOpen] = useState(false);
+    const [selectedPublisher, setSelectedPublisher] = useState<Publisher | null>(null);
     const { createPublisher, isLoading, publisher, getAllPublishers, orgPublishers, isGettingPublishers } = useStore(useShallow((state) => ({
         createPublisher: state.createPublisher,
         isLoading: state.publisherState.isLoading,
@@ -57,7 +64,7 @@ export default function PublisherDashboardPage() {
             await createPublisher(data);
             showToaster("Publisher created successfully!", "success");
             reset();
-            setOpen(false);
+            setIsAddPublisherOpen(false);
         } catch (error) {
             const message = axios.isAxiosError(error)
                 ? error.response?.data?.message
@@ -66,14 +73,18 @@ export default function PublisherDashboardPage() {
         }
     };
 
+    const handleViewInventory = (publisherId: string) => {
+        router.push(publisherEndpoints.publisherInventory(publisherId))
+    };
+
     return (
         <div className="flex flex-col">
             <header className="flex items-center justify-between">
                 <CampaignHeader title="Publishers" description="Manage your publisher partners." />
                 <Popover
-                    open={open}
+                    open={isAddPublisherOpen}
                     onOpenChange={(nextOpen) => {
-                        if (!isLoading) setOpen(nextOpen);
+                        if (!isLoading) setIsAddPublisherOpen(nextOpen);
                     }}
                 >
                     <PopoverTrigger render={<Button>Add Publisher</Button>} />
@@ -174,9 +185,13 @@ export default function PublisherDashboardPage() {
                         <p className="mt-3 text-sm text-gray-500">Loading publishers...</p>
                     </div>
                 ) : orgPublishers.length > 0 ? (
-                    <div className="divide-y divide-white/10">
+                    <div className="grid gap-4 p-5 sm:grid-cols-2 sm:p-6 lg:grid-cols-3">
                         {orgPublishers.map((publisher) => (
-                            <Publishers key={publisher.id} publisher={publisher} />
+                            <Publishers
+                                key={publisher.id}
+                                publisher={publisher}
+                                onViewInventory={handleViewInventory}
+                            />
                         ))}
                     </div>
                 ) : (
@@ -186,6 +201,46 @@ export default function PublisherDashboardPage() {
                     </div>
                 )}
             </section>
+            <RightDialog
+                open={Boolean(selectedPublisher)}
+                onOpenChange={(nextOpen) => {
+                    if (!nextOpen) setSelectedPublisher(null);
+                }}
+                title={selectedPublisher ? `${selectedPublisher.name} inventory` : "Publisher inventory"}
+                description="Review this publisher's inventory and add an ad zone."
+                footer={
+                    <>
+                        <DialogClose render={<Button type="button" variant="outline" />}>Cancel</DialogClose>
+                        <Button type="button">Add zone</Button>
+                    </>
+                }
+            >
+                {selectedPublisher && (
+                    <div className="space-y-5 py-2 text-sm text-gray-300">
+                        <div className="rounded-lg border border-white/10 bg-black/10 p-4">
+                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">Publisher</p>
+                            <p className="mt-2 text-base font-medium text-white">{selectedPublisher.name}</p>
+                            <p className="mt-1 text-gray-400">{selectedPublisher.contactName}</p>
+                        </div>
+                        <div className="space-y-3">
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">Email</p>
+                                <p className="mt-1 break-all">{selectedPublisher.emailAddress}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">Website</p>
+                                <p className="mt-1 break-all">{selectedPublisher.website}</p>
+                            </div>
+                            {selectedPublisher.comments && (
+                                <div>
+                                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">Comments</p>
+                                    <p className="mt-1">{selectedPublisher.comments}</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </RightDialog>
         </div>
     );
 }

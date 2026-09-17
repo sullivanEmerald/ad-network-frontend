@@ -1,10 +1,5 @@
 
 export const publisherEndpoints = {
     dashboard: "/organisation/publisher/dashboard",
-    createCampaign: "/organisation/campaign/new",
-    advertisers: "/organisation/advertisers",
-    campaigns: "/organisation/campaign",
-    campaignDetails: (campaignId: string) => `/organisation/campaigns/${campaignId}`,
-    advertiserDetails: (advertiserId: string) => `/organisation/advertisers/${advertiserId}`,
-    getDraft: (draftId: string) => `/organisation/campaign/new?draftId=${draftId}`,
+    publisherInventory: (publisherId: string) => `/organisation/publisher/${publisherId}`,
 }

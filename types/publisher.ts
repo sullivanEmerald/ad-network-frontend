@@ -5,4 +5,14 @@ export type Publisher = {
     emailAddress: string;
     website: string;
     comments: string;
+    zones?: PublisherZone[];
+};
+
+export type PublisherZone = {
+    id: string;
+    name: string;
+    width: number;
+    height: number;
+    type: string;
+    status: "active" | "inactive" | string;
 };
