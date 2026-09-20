@@ -12,4 +12,6 @@ export type CreateBannerData = {
     name: string;
     destinationUrl: string;
     image: File;
+    width?: string;
+    height?: string;
 };

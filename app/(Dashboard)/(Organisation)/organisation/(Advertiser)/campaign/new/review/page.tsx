@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
     AlertCircle,
@@ -17,31 +17,42 @@ import {
     WalletCards,
 } from "lucide-react";
 import {
-    fullCampaignSchema,
+    campaignSchema,
     crossFieldRules,
+    targetingSchema,
     type CrossFieldRule,
 } from "@/lib/schemas/campaign-schema";
 import { useStore } from "@/store/store";
 import { useShallow } from "zustand/react/shallow";
 import CampaignHeader from "@/components/campaign/header";
-
-const DRAFT_ID = "we23423n4k2nkl2l";
+import { useSearchParams } from "next/navigation";
+import { organisationEndpoints } from "@/endpoints/organisation";
 
 export default function ReviewStep() {
-    const { draft, createCampaign, isCreating, draftId } = useStore(useShallow((state) => ({
-        draft: state.campaignDraft,
-        createCampaign: state.createCampaign,
-        isCreating: state.campaignState.isCreating,
-        draftId: state.draftId,
+    const search = useSearchParams();
+    const campaignId = search.get("campaignId")
+    const { getSummary, isLoading, campaignReview, launchCampaign, isCreatingCampaign } = useStore(useShallow((state) => ({
+        getSummary: state.getCampaignSummary,
+        isLoading: state.campaignState.isGettingSummary,
+        campaignReview: state.campaignReview,
+        launchCampaign: state.launchCampaign,
+        isCreatingCampaign: state.campaignState.isCreating
     })));
     const router = useRouter();
 
 
-    const schemaResult = useMemo(() => fullCampaignSchema.safeParse(draft), [draft]);
-    const canLaunch = schemaResult.success;
+    useEffect(() => {
+        if (campaignId) getSummary(campaignId);
+        return;
+    }, [])
+
 
     function editStep(path: string) {
-        router.push(`/campaign/new${path}?draftId=${DRAFT_ID}`);
+        const query = new URLSearchParams();
+        // if (draftId) query.set("draftId", draftId);
+        // if (reviveCampaignId) query.set("reviveCampaignId", reviveCampaignId);
+        // const queryString = query.toString();
+        // router.push(`/organisation/campaign/new${path}${queryString ? `?${queryString}` : ""}`);
     }
 
     return (
@@ -50,31 +61,31 @@ export default function ReviewStep() {
                 <main className="space-y-5">
                     <ReviewSection icon={LayoutGrid} title="Campaign basics" onAction={() => editStep("")}>
                         <div className="grid gap-5 sm:grid-cols-2">
-                            <Detail label="Campaign name" value={draft?.campaignName || "Not set"} />
-                            <Detail label="Objective" value={formatLabel(draft?.objective)} />
+                            <Detail label="Campaign name" value={campaignReview?.campaign?.campaignName} />
+                            {/* <Detail label="Objective" value={formatLabel(draft?.objective)} /> */}
                         </div>
                     </ReviewSection>
 
-                    <ReviewSection icon={MapPin} title="Audience & delivery" onAction={() => editStep("/targeting")}>
+                    {/* <ReviewSection icon={MapPin} title="Audience & delivery" onAction={() => editStep("/targeting")}>
                         <div className="space-y-5">
                             <ChipDetail label="Locations" values={draft?.geo?.map((location) => location.label) ?? []} />
                             <ChipDetail label="Devices" values={draft?.devices ?? []} />
 
                         </div>
-                    </ReviewSection>
+                    </ReviewSection> */}
 
                     <ReviewSection icon={WalletCards} title="Budget & schedule" onAction={() => editStep("/budget")}>
                         <div className="grid gap-5 sm:grid-cols-3">
-                            <Detail label="Budget" value={draft?.budgetAmount ? `$${draft.budgetAmount.toLocaleString()}` : "Not set"} />
+                            {/* <Detail label="Budget" value={draft?.budgetAmount ? `$${draft.budgetAmount.toLocaleString()}` : "Not set"} />
                             <Detail label="Budget type" value={formatLabel(draft?.budgetType)} />
-                            <Detail label="Pacing" value={formatLabel(draft?.pacing)} />
-                            <Detail label="Start date" value={formatDate(draft?.startDate)} />
-                            <Detail label="End date" value={formatDate(draft?.endDate)} />
+                            <Detail label="Pacing" value={formatLabel(draft?.pacing)} /> */}
+                            <Detail label="Start date" value={formatDate(campaignReview?.campaign?.startDate)} />
+                            <Detail label="End date" value={formatDate(campaignReview?.campaign?.endDate)} />
                         </div>
                     </ReviewSection>
 
-                    <ReviewSection icon={ImageIcon} title="Creative assets" onAction={() => editStep("/creative")}>
-                        {draft?.assets?.length ? (
+                    <ReviewSection icon={ImageIcon} title="Creative assets" onAction={() => editStep("/banner")}>
+                        {/* {draft?.assets?.length ? (
                             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                                 {draft.assets.map((asset, index) => (
                                     <div key={`${asset.fileUrl}-${index}`} className="overflow-hidden rounded-lg bg-ink-50">
@@ -90,7 +101,11 @@ export default function ReviewStep() {
                                     </div>
                                 ))}
                             </div>
-                        ) : <EmptyState text="No creative assets uploaded" />}
+                        ) : <EmptyState text="No creative assets uploaded" />} */}
+                        <div className="grid gap-5 sm:grid-cols-3">
+                            <Detail label="Banner name" value={campaignReview?.banners?.name} />
+                            <Detail label="Destination URL" value={campaignReview?.banners?.destinationUrl} />
+                        </div>
                     </ReviewSection>
                 </main>
 
@@ -99,27 +114,27 @@ export default function ReviewStep() {
                         <div className="mb-6 flex items-start justify-between gap-4">
                             <div>
                                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Launch summary</p>
-                                <h2 className="mt-2 text-xl font-semibold">{draft?.campaignName || "Untitled campaign"}</h2>
+                                <h2 className="mt-2 text-xl font-semibold">{campaignReview?.campaign.campaignName}</h2>
                             </div>
                             <Rocket className="h-5 w-5 text-primary" />
                         </div>
                         <div className="space-y-4 text-sm">
-                            <SummaryRow icon={CalendarDays} label="Schedule" value={formatDate(draft?.startDate)} />
-                            <SummaryRow icon={WalletCards} label="Spend" value={draft?.budgetAmount ? `$${draft.budgetAmount.toLocaleString()} / ${draft.budgetType}` : "Not set"} />
-                            <SummaryRow icon={Smartphone} label="Devices" value={`${draft?.devices?.length ?? 0} selected`} />
+                            <SummaryRow icon={CalendarDays} label="Schedule" value={formatDate(campaignReview?.campaign?.startDate)} />
+                            {/* <SummaryRow icon={WalletCards} label="Spend" value={draft?.budgetAmount ? `$${draft.budgetAmount.toLocaleString()} / ${draft.budgetType}` : "Not set"} /> */}
+                            {/* <SummaryRow icon={Smartphone} label="Devices" value={`${draft?.devices?.length ?? 0} selected`} /> */}
                         </div>
                         <button
                             type="button"
-                            disabled={!canLaunch || isCreating}
+                            disabled={isCreatingCampaign || isLoading}
                             onClick={async () => {
-                                if (!draft) return;
-                                await createCampaign(draft, draftId, "active")
-                                router.push('/organisation/campaigns')
+                                if (!campaignId) return;
+                                await launchCampaign(campaignId)
+                                router.push(organisationEndpoints.dashboard)
                             }}
                             className="mt-7 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-ink-950 transition hover:bg-primary/80 disabled:cursor-not-allowed disabled:opacity-40"
                         >
-                            {isCreating ? "Launching..." : "Launch campaign"}
-                            {!isCreating && <ChevronRight className="h-4 w-4" />}
+                            {false ? "Launching..." : "Launch campaign"}
+                            {/* {!isCreating && <ChevronRight className="h-4 w-4" />} */}
                         </button>
                         <button type="button" onClick={() => router.back()} className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white">
                             <ArrowLeft className="h-4 w-4" />
@@ -129,6 +144,7 @@ export default function ReviewStep() {
                 </aside>
             </div>
         </div>
+
     );
 }
 
@@ -158,8 +174,8 @@ function ReviewSection({ icon: Icon, title, onAction, children }: { icon: typeof
     );
 }
 
-function Detail({ label, value }: { label: string; value: string }) {
-    return <div><p className="text-sm text-gray-500">{label}</p><p className="mt-1 text-md font-semibold text-white capitalize">{value}</p></div>;
+function Detail({ label, value }: { label: string; value: string | undefined | Date }) {
+    return <div><p className="text-sm text-gray-500">{label}</p><p className="mt-1 text-md font-semibold text-white capitalize">{value instanceof Date ? formatDate(value) : value ?? "Not set"}</p></div>;
 }
 
 function ChipDetail({ label, values }: { label: string; values: string[] }) {
@@ -182,6 +198,11 @@ function formatLabel(value: string | undefined) {
     return value ? value.replaceAll("_", " ") : "Not set";
 }
 
-function formatDate(value: Date | undefined) {
-    return value ? new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(value)) : "Not set";
+function formatDate(value: Date | undefined | string | null) {
+    if (!value) return "Not set";
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime())
+        ? "Not set"
+        : new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(date);
 }

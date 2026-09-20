@@ -5,6 +5,7 @@ export type CampaignDraft = Partial<FullCampaignData> & {
     currentStep: number;
     completedSteps: number[];
     lastSavedAt: string | null;
+    reviveCampaignId?: number | string | null;
 
 };
 
@@ -20,4 +21,25 @@ export type CampaignRecord = Partial<Omit<FullCampaignData, "startDate" | "endDa
     updatedAt: string;
     isSchedule: boolean;
     reviveCampaignId: number;
+};
+
+export type CampaignCreationResponse = Partial<CampaignRecord> & {
+    id?: string | number | null;
+    campaignId?: number | string | null;
+    draftId?: string | null;
+};
+
+export type CampaignReviewSummary = {
+    campaign: {
+        campaignName: string;
+        startDate: string | Date | undefined;
+        endDate?: string | Date | null | undefined;
+        id: string;
+    };
+    banners: {
+        name: string;
+        destinationUrl: string;
+        file: string;
+        id: string;
+    };
 };

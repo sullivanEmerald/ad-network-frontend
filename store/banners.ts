@@ -57,10 +57,8 @@ export const createBannerSlice: StateCreator<Store, [["zustand/immer", never]], 
             state.bannerState.isCreating = true;
             state.bannerState.error = null;
         });
-
         try {
-            const response = await createBannerRequest(campaignId, data);
-            const banner = response;
+            const banner = await createBannerRequest(campaignId, data);
             if (banner) {
                 set((state) => {
                     state.banners.push(banner);

@@ -1,8 +1,8 @@
 import axiosInstance from "@/lib/axiosInstance";
 
-export const createCampaign = async (data: any, status: string, id?: string) => {
+export const createCampaign = async (data: any) => {
     try {
-        const response = await axiosInstance.post(`/campaigns/${id}`, { ...data, status });
+        const response = await axiosInstance.post(`/campaigns/`, { ...data });
         return response.data;
     } catch (error) {
         console.error("Error creating campaign:", error);
@@ -10,9 +10,9 @@ export const createCampaign = async (data: any, status: string, id?: string) => 
     }
 };
 
-export const saveCampaignDraft = async (data: any, draftId?: string | null, status?: string) => {
+export const setCampaigns = async (campaignId: string) => {
     try {
-        const response = await axiosInstance.post(`/campaigns`, { ...data, draftId, status });
+        const response = await axiosInstance.patch(`/campaigns/${campaignId}/launch`);
         return response.data;
     } catch (error) {
         console.error("Error saving campaign draft:", error);
@@ -22,7 +22,6 @@ export const saveCampaignDraft = async (data: any, draftId?: string | null, stat
 
 
 export const createDraft = async (data: any, draftId?: string | null, status?: string) => {
-    alert(JSON.stringify(data, null, 2))
     try {
         const response = await axiosInstance.post(`/campaigns/drafts`, { ...data, draftId, status });
         return response.data;
@@ -59,6 +58,16 @@ export const getDraftById = async (draftId: string) => {
     } catch (error) {
         console.error("Error fetching campaign draft by ID:", error);
         throw error;
+    }
+}
+
+export const getCampaignSummary = async (campaignId: string) => {
+    try {
+        const response = await axiosInstance.get(`/campaigns/${campaignId}/summary`)
+        return response.data;
+    } catch (error) {
+        console.log(error)
+        throw error
     }
 }
 

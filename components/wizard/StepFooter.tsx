@@ -1,25 +1,36 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 // import { useCampaignDraft } from "@/lib/hooks/useCampaignDraftContext";
 import { WIZARD_STEPS } from "@/lib/schemas/campaign-schema";
 import Button from "@/components/common/button";
 import { useStore } from "@/store/store";
 import { useShallow } from "zustand/react/shallow";
 import { organisationEndpoints } from "@/endpoints/organisation";
+import type { FullCampaignData } from "@/lib/schemas/campaign-schema";
+import type { CampaignCreationResponse } from "@/types/campaign";
+import { LineLoader } from "../common/lineLoader";
+import { CreateBannerData } from "@/types/banner";
 
 interface StepFooterProps {
     currentStepId: number;
-    onNext: () => boolean; // returns whether validation passed
+    onNext: () => boolean;
+    data?: Partial<FullCampaignData>;
+    onCreate?: (data: Partial<FullCampaignData> | CreateBannerData) => Promise<CampaignCreationResponse>;
+    onSaveStep?: (data: Partial<FullCampaignData>) => Promise<CampaignCreationResponse | void>;
     nextLabel?: string;
 }
 
-export function StepFooter({ currentStepId, onNext, nextLabel = "Next" }: StepFooterProps) {
+export function StepFooter({ currentStepId, onNext, data, onCreate, onSaveStep, nextLabel = "Next" }: StepFooterProps) {
     const router = useRouter();
-    const { draft, createDraft, draftId } = useStore(useShallow((state) => ({
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { draft, createDraft, draftId, setDraftId, campaignId } = useStore(useShallow((state) => ({
         draft: state.campaignDraft,
         createDraft: state.createDraft,
         draftId: state.draftId,
+        setDraftId: state.setDraftId,
+        campaignId: state.campaignId,
         // markStepComplete: state.markStepComplete,
     })));
 
@@ -31,7 +42,11 @@ export function StepFooter({ currentStepId, onNext, nextLabel = "Next" }: StepFo
         //     await saveNow(draft);
         // }
         if (prevStep) {
-            router.push(`/organisation/campaign/new${prevStep.path}`);
+            const query = new URLSearchParams();
+            if (draftId) query.set("draftId", draftId);
+            if (campaignId) query.set("reviveCampaignId", campaignId);
+            const queryString = query.toString();
+            router.push(`/organisation/campaign/new${prevStep.path}${queryString ? `?${queryString}` : ""}`);
         }
     }
 
@@ -42,13 +57,35 @@ export function StepFooter({ currentStepId, onNext, nextLabel = "Next" }: StepFo
     }
 
     async function handleNext() {
+        if (isSubmitting) return;
         const valid = onNext();
-        if (!valid) return; // step-level gate — errors are already shown inline by the form
-        // markStepComplete(currentStepId);
-        // await saveNow();
-        if (nextStep) {
-            const draftQuery = draftId ? `?draftId=${draftId}` : "";
-            router.push(`/organisation/campaign/new${nextStep.path}${draftQuery}`);
+        if (!valid) return;
+        setIsSubmitting(true);
+        try {
+
+            if (onCreate && nextStep) {
+                const payload = data ?? {};
+                const response = await onCreate(payload);
+                const campaignId = response.campaignId;
+                const query = campaignId ? `?campaignId=${encodeURIComponent(String(campaignId))}` : "";
+                router.push(`/organisation/campaign/new${nextStep.path}${query}`);
+
+            }
+
+            // if (onSaveStep) {
+            //     const response = await onSaveStep(stepData);
+            //     const savedDraftId = response?.draftId ?? response?.id?.toString();
+            //     if (savedDraftId) {
+            //         setDraftId(savedDraftId);
+            //     }
+            //     if (!campaignId && response?.reviveCampaignId) {
+            //         campaignId = response.reviveCampaignId.toString();
+            //     }
+            // }
+        } catch (error) {
+            console.log("saving campaign error", error)
+        } finally {
+            setIsSubmitting(false);
         }
     }
 
@@ -76,9 +113,10 @@ export function StepFooter({ currentStepId, onNext, nextLabel = "Next" }: StepFo
                 <Button
                     type="button"
                     onClick={handleNext}
+                    disabled={isSubmitting}
                     className=""
                 >
-                    {nextLabel}
+                    {isSubmitting ? <LineLoader /> : nextLabel}
                 </Button>
             </div>
 

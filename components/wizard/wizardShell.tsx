@@ -8,18 +8,21 @@ import { useEffect } from "react";
 
 export function WizardShell({ children }: { children: React.ReactNode }) {
     const setDraftId = useStore((state) => state.setDraftId);
-    const getDraftById = useStore((state) => state.getDraftById);
+    const setReviveCampaignId = useStore((state) => state.setReviveCampaignId);
     const clearDraft = useStore((state) => state.clearDraft);
+    const getDraftById = useStore((state) => state.getDraftById);
     const draftId = useSearchParams().get("draftId");
+    const reviveCampaignId = useSearchParams().get("campaignId");
 
     useEffect(() => {
         if (draftId) {
             setDraftId(draftId);
             void getDraftById(draftId);
-        } else {
-            useStore.getState().clearDraft();
         }
-    }, []);
+        if (!draftId && !reviveCampaignId) {
+            clearDraft();
+        }
+    }, [clearDraft, draftId, getDraftById, reviveCampaignId, setDraftId, setReviveCampaignId]);
 
     return (
         <div className="">

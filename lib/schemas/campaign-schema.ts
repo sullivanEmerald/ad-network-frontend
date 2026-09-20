@@ -1,14 +1,29 @@
 import { z } from "zod";
+import { BannerFormData, bannerFormSchema } from "./banner";
 
-export const objectiveSchema = z.object({
+const dateInputSchema = z
+    .union([z.string().min(1, "Select a start date"), z.date()])
+    .transform((value) => new Date(value));
+
+const optionalDateSchema = z
+    .union([z.string(), z.date()])
+    .optional()
+    .transform((value) => (value ? new Date(value) : undefined));
+
+const campaignBaseSchema = z.object({
     campaignName: z
         .string()
         .min(3, "Campaign name must be at least 3 characters")
         .max(80, "Campaign name must be under 80 characters"),
-    objective: z.enum(["traffic", "awareness", "conversions", "app_installation", "engagement"], {
-        errorMap: () => ({ message: "Select a campaign objective" }),
-    }),
+    startDate: dateInputSchema,
+    endDate: optionalDateSchema,
 });
+
+export const campaignSchema = campaignBaseSchema
+    .refine((data) => !data.endDate || data.endDate > data.startDate, {
+        message: "End date must be after start date",
+        path: ["endDate"],
+    });
 
 export const targetingSchema = z.object({
     geo: z
@@ -33,13 +48,7 @@ export const budgetSchema = z
             .number({ invalid_type_error: "Enter a budget amount" })
             .positive("Budget must be greater than 0")
             .min(50, "Minimum budget is $50/day"),
-        startDate: z.coerce.date({ errorMap: () => ({ message: "Select a start date" }) }),
-        endDate: z.coerce.date().optional(),
         pacing: z.enum(["standard", "accelerated"]),
-    })
-    .refine((data) => !data.endDate || data.endDate > data.startDate, {
-        message: "End date must be after start date",
-        path: ["endDate"],
     });
 
 export const creativeAssetSchema = z.object({
@@ -55,16 +64,18 @@ export const creativeSchema = z.object({
 });
 
 /** Full merged schema — used for final submit and for the Review step. */
-export const fullCampaignSchema = objectiveSchema
+export const fullCampaignSchema = campaignBaseSchema
     .merge(targetingSchema)
-    .merge(budgetSchema.innerType()) // .refine() wraps the object; unwrap to merge, re-apply refine below
+    .merge(bannerFormSchema)
+    .merge(budgetSchema) // .refine() wraps the object; unwrap to merge, re-apply refine below
     .merge(creativeSchema)
     .refine((data) => !data.endDate || data.endDate > data.startDate, {
         message: "End date must be after start date",
         path: ["endDate"],
     });
 
-export type ObjectiveData = z.infer<typeof objectiveSchema>;
+export type CampaignData = z.infer<typeof campaignSchema>;
+export type ObjectiveData = CampaignData;
 export type TargetingData = z.infer<typeof targetingSchema>;
 export type BudgetData = z.infer<typeof budgetSchema>;
 export type CreativeData = z.infer<typeof creativeSchema>;
@@ -85,11 +96,12 @@ export type CampaignDraft = Partial<FullCampaignData> & {
 };
 
 export const WIZARD_STEPS = [
-    { id: 0, key: "objective", label: "Objective", path: "" },
-    { id: 1, key: "targeting", label: "Targeting", path: "/targeting" },
-    { id: 2, key: "budget", label: "Budget & Schedule", path: "/budget" },
-    { id: 3, key: "creative", label: "Creative", path: "/creative" },
-    { id: 4, key: "review", label: "Review & Launch", path: "/review" },
+    { id: 0, key: "campaign", label: "Campaign", path: "" },
+    { id: 1, key: "banner", label: "Banner", path: "/banner" },
+    { id: 2, key: "review", label: "Review & Launch", path: "/review" },
+    // { id: 2, key: "budget", label: "Budget & Schedule", path: "/budget" },
+    // { id: 3, key: "creative", label: "Creative", path: "/creative" },
+    // { id: 4, key: "review", label: "Review & Launch", path: "/review" },
 ] as const;
 
 export type StepKey = (typeof WIZARD_STEPS)[number]["key"];
@@ -129,14 +141,10 @@ export const crossFieldRules: CrossFieldRule[] = [
 
 export function getStepSchema(stepKey: StepKey) {
     switch (stepKey) {
-        case "objective":
-            return objectiveSchema;
-        case "targeting":
+        case "campaign":
+            return campaignSchema;
+        case "banner":
             return targetingSchema;
-        case "budget":
-            return budgetSchema;
-        case "creative":
-            return creativeSchema;
         case "review":
             return fullCampaignSchema;
     }

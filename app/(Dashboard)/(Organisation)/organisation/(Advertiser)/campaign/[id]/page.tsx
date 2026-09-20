@@ -21,21 +21,15 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-
-const bannerFormSchema = z.object({
-    name: z.string().trim().min(2, "Enter a banner name"),
-    destinationUrl: z.string().trim().url("Enter a valid destination URL"),
-    image: z.custom<File>(
-        (value) => typeof File !== "undefined" && value instanceof File,
-        "Select an image for the banner",
-    ),
-});
-
-type BannerFormData = z.infer<typeof bannerFormSchema>;
+import { BannerFormData, bannerFormSchema } from "@/lib/schemas/banner";
+import { CreateBannerData } from "@/types/banner";
+import { getImageDimensions } from "@/components/banners/helpers";
+import { showToaster } from "@/components/common/toast";
 
 export default function CampaignBanners() {
     const { id } = useParams<{ id: string }>();
     const [isAddBannerOpen, setIsAddBannerOpen] = useState(false);
+    const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);
     const { banners, getBanners, createBanner, deleteBanner, isFetching, isCreating, isDeleting } = useStore(
         useShallow((state) => ({
             banners: state.banners,
@@ -63,7 +57,12 @@ export default function CampaignBanners() {
     }, [getBanners, id]);
 
     async function handleAddBanner(data: BannerFormData) {
-        await createBanner(id, data);
+        const fullData = {
+            ...data,
+            width: imageDimensions?.width.toString(),
+            height: imageDimensions?.height.toString(),
+        }
+        await createBanner(id, fullData);
         reset();
         setIsAddBannerOpen(false);
     }
@@ -129,8 +128,18 @@ export default function CampaignBanners() {
                                 accept="image/*"
                                 aria-invalid={Boolean(errors.image)}
                                 className="w-full rounded-lg border border-dashed border-gray-600 bg-black/10 px-3 py-3 text-sm text-gray-300 file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
-                                onChange={(event) => {
-                                    setValue("image", event.target.files?.[0] as File, { shouldValidate: true });
+                                onChange={async (event) => {
+                                    const file = event.target.files?.[0];
+                                    setValue("image", file as File, { shouldValidate: true });
+                                    setImageDimensions(null);
+
+                                    if (!file) return;
+
+                                    try {
+                                        setImageDimensions(await getImageDimensions(file));
+                                    } catch {
+                                        showToaster("Unable to read image dimensions", "error");
+                                    }
                                 }}
                             />
                             {errors.image && <p className="mt-1 text-xs text-red-500">{errors.image.message}</p>}

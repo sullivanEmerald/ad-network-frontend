@@ -24,8 +24,6 @@ export default function BudgetStep() {
         defaultValues: {
             budgetType: draft?.budgetType ?? "daily",
             budgetAmount: draft?.budgetAmount,
-            startDate: draft?.startDate,
-            endDate: draft?.endDate,
             pacing: draft?.pacing ?? "standard",
         },
         mode: "onBlur",
@@ -38,8 +36,6 @@ export default function BudgetStep() {
             reset({
                 budgetType: draft.budgetType ?? "daily",
                 budgetAmount: draft.budgetAmount,
-                startDate: draft.startDate,
-                endDate: draft.endDate,
                 pacing: draft.pacing ?? "standard",
             });
         }
@@ -86,33 +82,6 @@ export default function BudgetStep() {
                     placeholder="50"
                 />
             </Field>
-
-            <div className="grid grid-cols-2 gap-4">
-                <Field
-                    label="Start date"
-                    htmlFor="startDate"
-                    error={errors.startDate?.message}
-                >
-                    <Input
-                        id="startDate"
-                        type="date"
-                        {...register("startDate")}
-                        className="w-full rounded-sm border border-gray-600 px-3 py-4 text-sm text-white"
-                    />
-                </Field>
-                <Field
-                    label="End date (optional)"
-                    htmlFor="endDate"
-                    error={errors.endDate?.message}
-                >
-                    <Input
-                        id="endDate"
-                        type="date"
-                        {...register("endDate")}
-                        className="w-full rounded-sm border border-gray-600 px-3 py-4 text-sm text-white"
-                    />
-                </Field>
-            </div>
 
             <Field
                 label="Pacing"
