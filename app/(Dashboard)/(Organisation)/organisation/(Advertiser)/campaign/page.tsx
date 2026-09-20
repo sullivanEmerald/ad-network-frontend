@@ -16,12 +16,12 @@ export default function AdvertiserCampaignPage() {
     const clearDraft = useStore((state) => state.clearDraft);
     const {
         totalActiveCampaigns,
-        totalDraftsCampaigns,
-        totalScheduledCampaigns,
+        linkedCampaigns,
+        totalLinkedCampaigns,
+        pendingCampaigns,
+        totalPendingCampaigns,
         getCampaigns,
-        draftCampaigns,
         activeCampaigns,
-        scheduledCampaigns
     } = useCampaign();
     const router = useRouter();
 
@@ -50,31 +50,31 @@ export default function AdvertiserCampaignPage() {
                     <TabsList variant="line" className="mb-2 flex flex-row gap-8 border-none">
                         <TabsTrigger value="active" className="cursor-pointer">
                             <p className="text-white">
-                                Active{" "}
+                                Active Campaigns{" "}
                                 <span className="rounded-full bg-primary/40 px-2 py-0.5 text-white">{totalActiveCampaigns || 0}</span>
                             </p>
                         </TabsTrigger>
-                        <TabsTrigger value="schedule" className="cursor-pointer">
+                        <TabsTrigger value="pending" className="cursor-pointer">
                             <p className="text-white">
-                                Scheduled{" "}
-                                <span className="rounded-full bg-primary/40 px-2 py-0.5 text-white">{totalScheduledCampaigns || 0}</span>
+                                Pending Campaigns{" "}
+                                <span className="rounded-full bg-primary/40 px-2 py-0.5 text-white">{totalPendingCampaigns || 0}</span>
                             </p>
                         </TabsTrigger>
-                        <TabsTrigger value="drafts" className="cursor-pointer">
+                        <TabsTrigger value="linked" className="cursor-pointer">
                             <p className="text-white">
-                                Drafts{" "}
-                                <span className="rounded-full bg-primary/40 px-2 py-0.5 text-white">{totalDraftsCampaigns || 0}</span>
+                                InProgess Campaigns{" "}
+                                <span className="rounded-full bg-primary/40 px-2 py-0.5 text-white">{totalLinkedCampaigns || 0}</span>
                             </p>
                         </TabsTrigger>
                     </TabsList>
                     <TabsContent value="active">
                         <ActiveCard items={activeCampaigns} />
                     </TabsContent>
-                    <TabsContent value="schedule">
-                        <CampaignCard items={scheduledCampaigns} />
+                    <TabsContent value="pending">
+                        <CampaignCard items={pendingCampaigns} />
                     </TabsContent>
-                    <TabsContent value="drafts">
-                        <DraftCard items={draftCampaigns} />
+                    <TabsContent value="linked">
+                        <DraftCard items={linkedCampaigns} />
                     </TabsContent>
                 </Tabs>
             </div>

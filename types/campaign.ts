@@ -19,7 +19,7 @@ export type CampaignRecord = Partial<Omit<FullCampaignData, "startDate" | "endDa
     endDate?: string | Date | null;
     createdAt: string;
     updatedAt: string;
-    isSchedule: boolean;
+    isScheduled: boolean;
     reviveCampaignId: number;
 };
 

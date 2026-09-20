@@ -10,7 +10,7 @@ export function StatCard({
     value,
 }: StatCardProps) {
     return (
-        <div className="rounded-lg border border-gray-600 p-5">
+        <div className="rounded-lg border border-gray-700 bg-light-background p-5 h-40">
             <p className="text-sm text-muted-foreground">
                 {title}
             </p>

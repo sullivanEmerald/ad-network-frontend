@@ -61,7 +61,7 @@ export const createBannerSlice: StateCreator<Store, [["zustand/immer", never]], 
             const banner = await createBannerRequest(campaignId, data);
             if (banner) {
                 set((state) => {
-                    state.banners.push(banner);
+                    state.banners = [banner, ...state.banners];
                 });
             }
             showToaster("Banner added successfully.", "success");

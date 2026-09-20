@@ -11,25 +11,25 @@ export const useCampaign = () => {
     })))
 
     const activeCampaigns = useMemo(() => {
-        return campaigns.filter((campaign) => campaign.status?.toUpperCase() === "ACTIVE" && campaign.isSchedule === false)
+        return campaigns.filter((campaign) => campaign.status?.toLowerCase() === "linked" && campaign.isScheduled === false)
     }, [campaigns])
 
-    const scheduledCampaigns = useMemo(() => {
-        return campaigns.filter((campaign) => campaign.status?.toUpperCase() === "ACTIVE" && campaign.isSchedule === true)
+    const pendingCampaigns = useMemo(() => {
+        return campaigns.filter((campaign) => campaign.status?.toLowerCase() === "pending")
     }, [campaigns])
 
-    const draftCampaigns = useMemo(() => {
-        return campaigns.filter((campaign) => campaign.status?.toUpperCase() === "DRAFT")
+    const linkedCampaigns = useMemo(() => {
+        return campaigns.filter((campaign) => campaign.status?.toLowerCase() === "linked" && campaign.isScheduled === true)
     }, [campaigns])
 
     return {
         getCampaigns,
         activeCampaigns,
         totalActiveCampaigns: activeCampaigns.length,
-        scheduledCampaigns,
-        totalScheduledCampaigns: scheduledCampaigns.length,
-        draftCampaigns,
-        totalDraftsCampaigns: draftCampaigns.length,
+        pendingCampaigns,
+        totalPendingCampaigns: pendingCampaigns.length,
+        linkedCampaigns,
+        totalLinkedCampaigns: linkedCampaigns.length,
         isloading,
         campaigns
     }

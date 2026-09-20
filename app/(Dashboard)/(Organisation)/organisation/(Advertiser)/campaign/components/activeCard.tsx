@@ -52,28 +52,28 @@ export default function ActiveCard({ items }: CampaignCardProps) {
                     {items.map((campaign) => {
                         const isDraft = campaign.status?.toUpperCase() === "DRAFT";
                         const statusLabel = campaign.status?.toUpperCase() === "ACTIVE"
-                            ? campaign.isSchedule ? "Scheduled" : "Active"
+                            ? campaign.isScheduled ? "Scheduled" : "Active"
                             : campaign.status?.toUpperCase() === "DRAFT" ? "Draft" : formatLabel(campaign.status);
                         const budget = campaign.budgetAmount
                             ? `$${campaign.budgetAmount.toLocaleString()} ${campaign.budgetType === "daily" ? "/ day" : "total"}`
                             : "Not set";
 
                         return (
-                            <Card key={campaign.id} className="border border-gray-700 bg-transparent text-white">
+                            <Card key={campaign.id} className="border border-gray-700 bg-light-background text-white">
                                 <CardHeader className="gap-3 border-b border-gray-700">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="min-w-0">
                                             <CardTitle className="truncate text-base text-white">
                                                 {campaign.campaignName || "Untitled campaign"}
                                             </CardTitle>
-                                            <p className="mt-1 text-sm text-gray-400">{formatLabel(campaign.objective)}</p>
+                                            {/* <p className="mt-1 text-sm text-gray-400">{formatLabel(campaign.objective)}</p> */}
                                         </div>
                                         <span
                                             className={cn(
                                                 "shrink-0 rounded-full px-2 py-1 text-xs capitalize",
                                                 statusLabel === "Active" || statusLabel === "Scheduled"
                                                     ? "bg-green-600 text-white"
-                                                    : "bg-white/10 text-gray-300"
+                                                    : "bg-green-600 text-white"
                                             )}
                                         >
                                             {statusLabel}
