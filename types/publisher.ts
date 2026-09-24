@@ -1,12 +1,5 @@
-export type Publisher = {
-    id: string;
-    name: string;
-    contactName: string;
-    emailAddress: string;
-    website: string;
-    comments: string;
-    zones?: PublisherZone[];
-};
+export type Zone = PublisherZone[];
+
 
 export type PublisherZone = {
     id: string;
@@ -15,4 +8,5 @@ export type PublisherZone = {
     height: number;
     type: string;
     status: "active" | "inactive" | string;
+    campaignsCount: number
 };

@@ -1,19 +1,17 @@
 import axiosInstance from "@/lib/axiosInstance";
 import { authenticationEndpoints } from "@/endpoints/auth";
 import { LoginInput } from "@/lib/schemas/auth-schema";
-import { LoginResponse } from "@/types/auth";
 
-
-export const Register = async (registerData: any): Promise<LoginResponse> => {
+export const Register = async (registerData: any) => {
+    alert(JSON.stringify(registerData, null, 2))
     const response = await axiosInstance.post(authenticationEndpoints.register, registerData);
-    const data = response.data as LoginResponse;
+    const data = response.data;
     return data;
 }
 
-export const login = async (credentials: LoginInput): Promise<LoginResponse> => {
-    console.log("Logging in with credentials:", credentials);
+export const login = async (credentials: LoginInput) => {
     const response = await axiosInstance.post(authenticationEndpoints.login, credentials);
-    const data = response.data as LoginResponse;
+    const data = response.data;
 
     return data.user ? data : { user: data };
 };
@@ -24,9 +22,9 @@ export const authMe = async () => {
     return data;
 };
 
-export const refreshToken = async (): Promise<LoginResponse> => {
+export const refreshToken = async () => {
     const response = await axiosInstance.get(authenticationEndpoints.refreshToken);
-    const data = response.data as LoginResponse;
+    const data = response.data;
     return data;
 };
 

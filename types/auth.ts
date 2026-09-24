@@ -15,11 +15,6 @@ export type User = {
     accountType: string
 };
 
-export type LoginResponse = {
-    user?: User;
-    [key: string]: unknown;
-};
-
 export type AccountType = "ADVERTISER" | "PUBLISHER";
 
 export type UserRole =

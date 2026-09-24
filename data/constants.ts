@@ -25,23 +25,23 @@ export const CAMPAIGN_MAIN_NAV = [
 
 export const PUBLISHER_MENU_BARS = [
     {
-        label: "Ad marketplace",
-        to: "/organisation/publisher/marketplace",
+        label: "Dashboard",
+        to: "/organisation/publisher/dashboard",
         icon: BarChart3,
         paths: []
     },
     {
-        label: "Websites",
-        to: "/organisation/publisher/websites",
+        label: "Zones",
+        to: "/organisation/publisher/zones",
         icon: Globe,
         paths: []
     },
-    {
-        label: "Ad units",
-        to: "/publisher/ad-units",
-        icon: BarChart3,
-        paths: []
-    },
+    // {
+    //     label: "Ad units",
+    //     to: "/publisher/ad-units",
+    //     icon: BarChart3,
+    //     paths: []
+    // },
 ];
 
 export const CAMPAIGN_PROFILE_NAV = [

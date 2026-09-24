@@ -31,7 +31,7 @@ export default function LoginPage() {
     } = useForm<LoginInput>({
         resolver: zodResolver(loginSchema),
         defaultValues: {
-            businessEmail: "",
+            email: "",
             password: "",
         },
     });
@@ -64,15 +64,15 @@ export default function LoginPage() {
             <form className="space-y-6 w-full md:w-[80%]" onSubmit={handleSubmit(onSubmit)} noValidate>
                 <div className="relative ">
                     <Input
-                        id="businessEmail"
-                        label="Business Email"
+                        id="email"
+                        label="Email"
                         type="email"
                         autoComplete="email"
-                        {...register("businessEmail")}
+                        {...register("email")}
                         required
-                        placeholder="Enter your business email"
+                        placeholder="Enter your email"
                     />
-                    {errors.businessEmail && <span className="text-xs text-red-500 mt-1 block">{errors.businessEmail.message}</span>}
+                    {errors.email && <span className="text-xs text-red-500 mt-1 block">{errors.email.message}</span>}
                 </div>
                 <div className="relative">
                     <Input

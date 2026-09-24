@@ -6,6 +6,7 @@ import { createAuthSlice } from "@/store/auth";
 import { createAdvertiserSlice } from "./advertiser";
 import { createBannerSlice } from "./banners";
 import { createPublisherSlice } from "./publisher";
+import { createZoneSlice } from "./zones";
 
 export const useStore = create<Store>()(immer((...a) => ({
     ...createCampaignSlice(...a),
@@ -13,4 +14,5 @@ export const useStore = create<Store>()(immer((...a) => ({
     ...createAdvertiserSlice(...a),
     ...createBannerSlice(...a),
     ...createPublisherSlice(...a),
+    ...createZoneSlice(...a),
 })));

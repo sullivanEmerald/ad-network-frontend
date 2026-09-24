@@ -4,40 +4,41 @@ import type { ZoneFormData } from "@/lib/schemas/zone-schema";
 import {
     createPublisher as createPublisherRequest,
     createZone as createZoneRequest,
-    getAllPublishers,
+    generateZoneTag as generateZoneTagRequest,
+    getZones,
     getPublisherDetails,
     getPublisherZones as getPublisherZonesRequest,
 } from "@/services/publisher";
-import type { Publisher, PublisherZone } from "@/types/publisher";
+import type { Zone, PublisherZone } from "@/types/publisher";
 import type { Store } from "@/types/store";
 
 export type PublisherSlice = {
-    publisher: Publisher | null;
-    publishers: Publisher[] | [];
-    publisherZones: PublisherZone[];
+    zones: Zone;
+    publishers: Zone[] | [];
     createPublisher: (data: PublisherFormData) => Promise<void>;
-    createZone: (publisherId: string, data: ZoneFormData) => Promise<PublisherZone>;
-    getAllPublishers: () => Promise<void>;
-    getPublisherDetails: (publisherId: string) => Promise<Publisher>;
-    getPublisherZones: (publisherId: string) => Promise<void>;
+    createZone: (data: ZoneFormData) => Promise<PublisherZone>;
+    generateZoneTag: (zoneId: string) => Promise<{ tag: string, codeType: string }>;
+    getZone: () => Promise<void>;
+    getPublisherDetails: (publisherId: string) => Promise<Zone>;
     publisherState: {
         isLoading: boolean;
         isFetching: boolean;
         isGettingPublisherDetails: boolean;
         isCreatingZone: boolean;
+        isGeneratingTag: boolean;
         isFetchingZones: boolean;
     };
 };
 
 export const createPublisherSlice: StateCreator<Store, [["zustand/immer", never]], [], PublisherSlice> = (set) => ({
-    publisher: null,
+    zones: [],
     publishers: [],
-    publisherZones: [],
     publisherState: {
         isLoading: false,
         isFetching: false,
         isGettingPublisherDetails: false,
         isCreatingZone: false,
+        isGeneratingTag: false,
         isFetchingZones: false,
     },
     createPublisher: async (data) => {
@@ -58,21 +59,16 @@ export const createPublisherSlice: StateCreator<Store, [["zustand/immer", never]
         }
     },
 
-    createZone: async (publisherId, data) => {
+    createZone: async (data) => {
         set((state) => {
             state.publisherState.isCreatingZone = true;
         });
 
         try {
-            const response = await createZoneRequest(publisherId, data);
+            const response = await createZoneRequest(data);
             const zone = response?.data?.zone ?? response?.zone ?? response?.data ?? response;
-
             set((state) => {
-                state.publisherZones = [zone, ...state.publisherZones];
-
-                if (state.publisher?.id === publisherId) {
-                    state.publisher.zones = [zone, ...(state.publisher.zones ?? [])];
-                }
+                state.zones = [zone, ...state.zones];
             });
 
             return zone;
@@ -83,7 +79,20 @@ export const createPublisherSlice: StateCreator<Store, [["zustand/immer", never]
         }
     },
 
-    getAllPublishers: async () => {
+    generateZoneTag: async (zoneId) => {
+        set((state) => {
+            state.publisherState.isGeneratingTag = true;
+        });
+        try {
+            return await generateZoneTagRequest(zoneId);
+        } finally {
+            set((state) => {
+                state.publisherState.isGeneratingTag = false;
+            });
+        }
+    },
+
+    getZone: async () => {
         set((state: { publisherState: any }) => ({
             publisherState: {
                 ...state.publisherState,
@@ -92,8 +101,8 @@ export const createPublisherSlice: StateCreator<Store, [["zustand/immer", never]
         }));
 
         try {
-            const response = await getAllPublishers();
-            set({ publishers: response });
+            const response = await getZones();
+            set({ zones: response });
             return response;
         } catch (error) {
             console.log(error)
@@ -117,9 +126,9 @@ export const createPublisherSlice: StateCreator<Store, [["zustand/immer", never]
         try {
             const response = await getPublisherDetails(publisherId);
             const publisher = response?.data?.publisher ?? response?.publisher ?? response?.data ?? response;
-            set((state) => {
-                state.publisher = publisher;
-            });
+            // set((state) => {
+            //     state.publisher = publisher;
+            // });
             return publisher;
         } catch (error) {
 
@@ -132,27 +141,4 @@ export const createPublisherSlice: StateCreator<Store, [["zustand/immer", never]
             }));
         }
     },
-
-    getPublisherZones: async (publisherId) => {
-        set((state) => {
-            state.publisherState.isFetchingZones = true;
-        });
-
-        try {
-            const response = await getPublisherZonesRequest(publisherId);
-            const zones = response?.data?.zones ?? response?.zones ?? response?.data ?? response;
-
-            set((state) => {
-                state.publisherZones = Array.isArray(zones) ? zones : [];
-
-                if (state.publisher?.id === publisherId) {
-                    state.publisher.zones = state.publisherZones;
-                }
-            });
-        } finally {
-            set((state) => {
-                state.publisherState.isFetchingZones = false;
-            });
-        }
-    }
 });

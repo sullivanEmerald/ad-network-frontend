@@ -2,13 +2,12 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { Check, Copy, Ellipsis, ExternalLink, LoaderCircle, Plus } from "lucide-react";
+import { LoaderCircle, Plus, Copy, Check } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useShallow } from "zustand/shallow";
 import CampaignHeader from "@/components/campaign/header";
 import Button from "@/components/common/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useStore } from "@/store/store";
 import { Loader } from "@/components/common/loader";
 import { NotFoundComponent } from "@/components/common/notFound";
@@ -18,6 +17,13 @@ import { zoneSchema, type ZoneFormData } from "@/lib/schemas/zone-schema";
 import { showToaster } from "@/components/common/toast";
 import { LineLoader } from "@/components/common/lineLoader";
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import {
     Dialog,
     DialogContent,
     DialogDescription,
@@ -25,13 +31,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 
 const zonePresets = [
@@ -54,23 +55,23 @@ const codeZoneTypes = [
 ];
 
 
-export default function PublisherDetailsPage() {
-    const { id } = useParams<{ id: string }>();
-    const [activeTab, setActiveTab] = useState("overview");
-    const { publisher, createZone, generateZoneTag, getPublisherDetails, isLoading, iscreatingZone, isGeneratingTag } = useStore(useShallow((state) => ({
-        publisher: state.publisher,
+export default function ZonePage() {
+    const { zones, createZone, isLoading, iscreatingZone, getZones, isGeneratingTag, generateZoneTag } = useStore(useShallow((state) => ({
         createZone: state.createZone,
-        generateZoneTag: state.generateZoneTag,
-        getPublisherDetails: state.getPublisherDetails,
-        isLoading: state.publisherState.isGettingPublisherDetails,
+        isLoading: state.publisherState.isFetching,
         iscreatingZone: state.publisherState.isCreatingZone,
+        zones: state.zones,
+        getZones: state.getZone,
         isGeneratingTag: state.publisherState.isGeneratingTag,
+        generateZoneTag: state.generateZoneTag,
+
     })));
-    const [open, setIsOpen] = useState(false)
+    const router = useRouter();
     const [generatingZoneId, setGeneratingZoneId] = useState<string | null>(null);
     const [generatedTag, setGeneratedTag] = useState<string | null>(null);
     const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
     const [isTagCopied, setIsTagCopied] = useState(false);
+    const [open, setIsOpen] = useState(false)
     const { register, handleSubmit, reset, setValue, control, formState: { errors } } = useForm<ZoneFormData>({
         resolver: zodResolver(zoneSchema),
         defaultValues: {
@@ -81,26 +82,24 @@ export default function PublisherDetailsPage() {
             description: "Top advertising placement",
         },
     });
+
+
+    useEffect(() => {
+        getZones();
+    }, [])
+
     const selectedWidth = useWatch({ control, name: "width" });
     const selectedHeight = useWatch({ control, name: "height" });
     const selectedType = useWatch({ control, name: "type" });
 
-    useEffect(() => {
-        if (id) {
-            getPublisherDetails(id);
-        }
-    }, [getPublisherDetails, id]);
-
     const onSubmit = async (data: ZoneFormData) => {
-        if (!id) return;
-
         const resolvedData = {
             ...data,
             type: data.type.toString() as ZoneFormData["type"]
         }
 
         try {
-            await createZone(id, resolvedData);
+            await createZone(resolvedData);
             showToaster("Zone created successfully!", "success");
             reset();
             setIsOpen(false);
@@ -113,119 +112,83 @@ export default function PublisherDetailsPage() {
     };
     return (
         <div className="flex flex-col gap-6">
-            <CampaignHeader title="Publisher Details" description="Manage this publisher's inventory and performance." />
-
+            <div className="flex items-center justify-between gap-4">
+                <CampaignHeader title="Zones / Placements" description="Manageinventory and performance." />
+                <Button type="button" className="shrink-0 px-4" onClick={() => setIsOpen(true)}>
+                    <Plus className="size-4" />
+                    Add Zone
+                </Button>
+            </div>
             {isLoading ? (
                 <Loader />
-            ) : publisher === null ? (
+            ) : zones.length === 0 ? (
                 <>
-                    <NotFoundComponent title="Publisher not found" subTitle="Visit the publishers page. try again" />
+                    <NotFoundComponent
+                        title="No zone created yet"
+                        subTitle="Create zone to start viewing inventory"
+                        onButtonClick={() => setIsOpen(true)}
+                        buttonText="Create Zone"
+                    />
+
                 </>
             ) : (
                 <main>
-                    <section className="border-b border-white/10 pb-5">
-                        <div className="flex flex-wrap items-end justify-between gap-4">
-                            <div>
-                                <h1 className="text-2xl font-semibold text-white">{publisher.name}</h1>
-                                <a className="mt-1 inline-flex items-center gap-1 text-sm text-gray-400 hover:text-white" href={publisher.website} target="_blank" rel="noreferrer">
-                                    {publisher.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                                    <ExternalLink className="size-3.5" />
-                                </a>
-                            </div >
-                            <span className="rounded-full border border-green-400/20 bg-green-400/10 px-3 py-1 text-xs font-medium text-green-300">Active</span>
-                        </div >
-                    </section >
-
-                    <Tabs value={activeTab} onValueChange={setActiveTab}>
-                        <TabsList variant="line" className="">
-                            <TabsTrigger value="overview">Overview</TabsTrigger>
-                            <TabsTrigger value="zones">Zones</TabsTrigger>
-                            <TabsTrigger value="statistics">Statistics</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="overview" className="pt-6">
-                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                <div className="rounded-xl border border-white/10 bg-light-background/70 p-5">
-                                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">Contact</p>
-                                    <p className="mt-3 font-medium text-gray-200">{publisher.contactName}</p>
-                                    <p className="mt-1 text-sm text-gray-400">{publisher.emailAddress}</p>
-                                </div>
-                                <div className="rounded-xl border border-white/10 bg-light-background/70 p-5">
-                                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-gray-500">Inventory</p>
-                                    <p className="mt-3 text-2xl font-semibold text-white">{publisher?.zones?.length ?? 0}</p>
-                                    <p className="mt-1 text-sm text-gray-400">active zones</p>
-                                </div>
-                            </div>
-                        </TabsContent>
-
-                        <TabsContent value="zones" className="pt-6">
-                            <div className="flex items-center justify-between gap-4">
-                                <div>
-                                    <h2 className="text-lg font-semibold text-white">Zones</h2>
-                                    <p className="mt-1 text-sm text-gray-400">{publisher?.zones?.length} active zones</p>
-                                </div>
-                                <Button type="button" className="shrink-0 px-4" onClick={() => setIsOpen(true)}>
-                                    <Plus className="size-4" />
-                                    Add Zone
-                                </Button>
-                            </div>
-                            <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                {publisher?.zones.map((zone) => (
-                                    <div key={zone.id} className="flex min-h-44 flex-col justify-between rounded-xl border border-white/10 bg-light-background/70 p-5 transition-colors hover:border-primary/40 hover:bg-light-background">
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div className="min-w-0">
-                                                <h3 className="truncate font-semibold text-white">{zone.name}</h3>
-                                                <p className="mt-2 text-sm text-gray-400">{zone.width} x {zone.height}px</p>
-                                                <p className="mt-1 text-sm text-gray-500">{zone.type}</p>
-                                                <p className="mt-4 rounded-full bg-background border border-gray-700 text-md text-primary px-3 py-2 ">{zone.campaignsCount} Campaigns linked</p>
-                                            </div>
-                                            <button type="button" className="shrink-0 rounded-md p-2 text-gray-400 hover:bg-white/10 hover:text-white" aria-label={`More actions for ${zone.name}`}>
-                                                <Ellipsis className="size-5" />
-                                            </button>
-                                        </div>
-                                        <div className="mt-5 flex items-center justify-between text-sm text-green-300">
-                                            <p>{zone.status === "active" ? "available" : zone.status.toLowerCase()}</p>
-                                            <Button
-                                                type="button"
-                                                disabled={isGeneratingTag && generatingZoneId === zone.id}
-                                                onClick={async () => {
-                                                    setGeneratingZoneId(zone.id);
-                                                    try {
-                                                        const response = await generateZoneTag(zone.id);
-                                                        if (!response.tag) {
-                                                            throw new Error("The tag response was empty");
-                                                        }
-
-                                                        alert(JSON.stringify(response.tag, null, 2))
-
-                                                        setGeneratedTag(response.tag);
-                                                        setIsTagCopied(false);
-                                                        setIsTagDialogOpen(true);
-                                                        showToaster("Zone tag generated successfully.", "success");
-                                                    } catch (err) {
-                                                        showToaster("Failed to generate zone tag.", "error");
-                                                        console.log(err)
-                                                    } finally {
-                                                        setGeneratingZoneId(null);
-                                                    }
-                                                }}
-                                            >
-                                                {isGeneratingTag && generatingZoneId === zone.id ? (
-                                                    <LineLoader />
-                                                ) : (
-                                                    "Generate Tag"
-                                                )}
-                                            </Button>
-                                        </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                        {zones.map((zone) => {
+                            const zoneType = codeZoneTypes.find((zoneType) => String(zoneType.value) === zone.type);
+                            return (
+                                <div
+                                    key={zone.id}
+                                    onClick={() => router.push(`/organisation/publisher/zones/${zone.id}`)}
+                                    className="rounded-lg border border-gray-700 bg-light-background p-5 h-aut0 flex flex-col gap-4 cursor-pointer"
+                                >
+                                    <h3 className="truncate font-semibold text-gray-400 text-md">{zone.name}</h3>
+                                    <p className="text-lg text-white">
+                                        Dimensions: {zone.width} x {zone.height}px
+                                    </p>
+                                    <div className="flex items-center gap-4">
+                                        <span className="text-gray-400">Available Campaign</span>
+                                        <p className="bg-primary/20 rounded-full text-white px-3 py-1">
+                                            {zone.campaignsCount}
+                                        </p>
                                     </div>
-                                ))}
-                            </div>
-                        </TabsContent>
-
-                        <TabsContent value="statistics" className="pt-6">
-                            <div className="rounded-xl border border-dashed border-white/15 p-10 text-center text-sm text-gray-400">Statistics will appear once this publisher has traffic.</div>
-                        </TabsContent>
-                    </Tabs>
-                </main >
+                                    <p className="text-sm text-gray-500">
+                                        {zoneType?.label ?? "Unknown zone type"}
+                                    </p>
+                                    <Button
+                                        type="button"
+                                        disabled={isGeneratingTag && generatingZoneId === zone.id}
+                                        onClick={async (event) => {
+                                            event.stopPropagation();
+                                            setGeneratingZoneId(zone.id);
+                                            try {
+                                                const response = await generateZoneTag(zone.id);
+                                                if (!response.tag) {
+                                                    throw new Error("The tag response was empty");
+                                                }
+                                                setGeneratedTag(response.tag);
+                                                setIsTagCopied(false);
+                                                setIsTagDialogOpen(true);
+                                                showToaster("Zone tag generated successfully.", "success");
+                                            } catch (err) {
+                                                showToaster("Failed to generate zone tag.", "error");
+                                                console.log(err)
+                                            } finally {
+                                                setGeneratingZoneId(null);
+                                            }
+                                        }}
+                                    >
+                                        {isGeneratingTag && generatingZoneId === zone.id ? (
+                                            <LineLoader />
+                                        ) : (
+                                            "Generate Tag"
+                                        )}
+                                    </Button>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </main>
             )}
             <Dialog
                 open={isTagDialogOpen}
