@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Switch } from "@/components/ui/switch";
 
 
 const zonePresets = [
@@ -76,6 +77,7 @@ export default function ZonePage() {
         resolver: zodResolver(zoneSchema),
         defaultValues: {
             name: "Homepage Leaderboard",
+            mode: "automatic",
             width: 728,
             height: 90,
             type: 0,
@@ -91,10 +93,12 @@ export default function ZonePage() {
     const selectedWidth = useWatch({ control, name: "width" });
     const selectedHeight = useWatch({ control, name: "height" });
     const selectedType = useWatch({ control, name: "type" });
+    const selectedMode = useWatch({ control, name: "mode" });
 
     const onSubmit = async (data: ZoneFormData) => {
         const resolvedData = {
             ...data,
+            mode: data.mode,
             type: data.type.toString() as ZoneFormData["type"]
         }
 
@@ -149,9 +153,12 @@ export default function ZonePage() {
                                     <div className="flex items-center gap-4">
                                         <span className="text-gray-400">Available Campaign</span>
                                         <p className="bg-primary/20 rounded-full text-white px-3 py-1">
-                                            {zone.campaignsCount}
+                                            {zone.campaignsCount || 0}
                                         </p>
                                     </div>
+                                    <p className="text-md text-gray-300">
+                                        zone mode is <span className="text-white">{zone.mode}</span>
+                                    </p>
                                     <p className="text-sm text-gray-500">
                                         {zoneType?.label ?? "Unknown zone type"}
                                     </p>
@@ -276,6 +283,30 @@ export default function ZonePage() {
                         </div>
                     </div>
                     <Input label="Zone name" placeholder="Homepage Leaderboard" error={errors.name?.message} {...register("name")} />
+                    <div className="flex items-center justify-between rounded-lg border border-white/10 bg-black/10 p-3">
+                        <div>
+                            <p className="text-sm font-medium text-white">Zone dimensions</p>
+                            <p className="mt-1 text-xs text-gray-400">
+                                {selectedMode === "automatic"
+                                    ? "Automatically select the campaign matching."
+                                    : "Manually selet campaigns for the zone"}
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-400">Manual</span>
+                            <Switch
+                                aria-label="match automatically or manually"
+                                checked={selectedMode === "manual"}
+                                onCheckedChange={(checked) =>
+                                    setValue("mode", checked ? "manual" : "automatic", {
+                                        shouldDirty: true,
+                                        shouldValidate: true,
+                                    })
+                                }
+                            />
+                            <span className="text-xs font-medium text-primary">Automatic</span>
+                        </div>
+                    </div>
                     <div className="grid grid-cols-2 gap-3">
                         <Input label="Width (px)" type="number" min={1} error={errors.width?.message} {...register("width", { valueAsNumber: true })} />
                         <Input label="Height (px)" type="number" min={1} error={errors.height?.message} {...register("height", { valueAsNumber: true })} />

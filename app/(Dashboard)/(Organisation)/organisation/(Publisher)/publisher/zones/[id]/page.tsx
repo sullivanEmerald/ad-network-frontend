@@ -1,66 +1,119 @@
 "use client";
-
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useShallow } from "zustand/shallow";
-import CampaignHeader from "@/components/campaign/header";
 import { useStore } from "@/store/store";
-import { Loader } from "@/components/common/loader";
+import MatchedCampaigns from "../components/matchedCampaigns";
+import LinkedCampaigns from "../components/linkedCampaigns";
+import CampaignSectionHeader from "../components/header";
+import Button from "@/components/common/button";
+import { showToaster } from "@/components/common/toast";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { LoaderCircle, Plus, Copy, Check } from "lucide-react";
+import { LineLoader } from "@/components/common/lineLoader";
 
 export default function PlacementZone() {
     const { id } = useParams<{ id: string }>();
-    const { zone, zoneCampaigns, getZoneCampaigns, isFetching, error } = useStore(
-        useShallow((state) => ({
-            zone: state.zone,
-            zoneCampaigns: state.zoneCampaigns,
-            getZoneCampaigns: state.getZoneCampaigns,
-            isFetching: state.zoneCampaignState.isFetching,
-            error: state.zoneCampaignState.error,
-        })),
-    );
+
+    const { zone, getZoneCampaigns, createZone, isLoading, iscreatingZone, getZones, isGeneratingTag, generateZoneTag } = useStore(useShallow((state) => ({
+        createZone: state.createZone,
+        isLoading: state.publisherState.isFetching,
+        iscreatingZone: state.publisherState.isCreatingZone,
+        getZones: state.getZone,
+        isGeneratingTag: state.publisherState.isGeneratingTag,
+        generateZoneTag: state.generateZoneTag,
+        getZoneCampaigns: state.getZoneCampaigns,
+        zone: state.zone,
+
+    })));
+    const [generatedTag, setGeneratedTag] = useState<string | null>(null);
+    const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
+    const [isTagCopied, setIsTagCopied] = useState(false);
+    const [open, setIsOpen] = useState(false)
 
     useEffect(() => {
         void getZoneCampaigns(id);
     }, [getZoneCampaigns, id]);
 
     return (
-        <main className="space-y-8">
-            <CampaignHeader
-                note="Zone placement"
-                title={zone?.name ?? "Campaigns for this zone"}
-                description={zone
-                    ? `Showing campaigns with banners matching ${zone.width} x ${zone.height}px.`
-                    : "View campaigns with banners sized to fit this zone perfectly."}
-            />
-            {isFetching ? <Loader /> : error ? (
-                <p className="text-sm text-red-400">{error}</p>
-            ) : zoneCampaigns.length === 0 ? (
-                <p className="text-sm text-gray-400">No campaigns have banners matching this zone yet.</p>
-            ) : (
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    {zoneCampaigns.map(({ campaign, banners }) => (
-                        <section key={campaign.id} className="rounded-lg border border-gray-700 bg-light-background p-5">
-                            <h2 className="text-xl font-semibold text-white">
-                                {campaign.campaignName ?? "Unnamed campaign"}
-                            </h2>
-                            <p className="mt-1 text-sm text-gray-400">{banners.length} matching banner{banners.length === 1 ? "" : "s"}</p>
-                            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                                {banners.map((banner) => (
-                                    <div key={banner.id} className="overflow-hidden rounded-lg border border-white/10 bg-black/20">
-                                        {banner.src ? (
-                                            <img src={banner.src} alt={banner.name} className="aspect-video w-full object-cover" />
-                                        ) : null}
-                                        <div className="p-3">
-                                            <p className="truncate font-medium text-white">{banner.name}</p>
-                                            <p className="mt-1 text-xs text-gray-400">{banner.width} x {banner.height}px</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
-                    ))}
-                </div>
-            )}
+        <main>
+            <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <CampaignSectionHeader
+                    title={zone?.name ?? "Campaigns for this zone"}
+                    subtitle={zone
+                        ? `Showing campaigns with banners matching ${zone.width} x ${zone.height}px.`
+                        : "View campaigns with banners sized to fit this zone perfectly."}
+                />
+                <Button
+                    type="button"
+                    disabled={isGeneratingTag}
+                    onClick={async () => {
+                        try {
+                            const response = await generateZoneTag(id);
+                            if (!response.tag) {
+                                throw new Error("The tag response was empty");
+                            }
+                            setGeneratedTag(response.tag);
+                            setIsTagCopied(false);
+                            setIsTagDialogOpen(true);
+                            showToaster("Zone tag generated successfully.", "success");
+                        } catch (err) {
+                            showToaster("Failed to generate zone tag.", "error");
+                            console.log(err)
+                        }
+                    }}
+                >
+                    {isGeneratingTag ? (
+                        <LineLoader />
+                    ) : (
+                        "Generate Installation Code"
+                    )}
+                </Button>
+            </header>
+            <div className="space-y-6">
+                <MatchedCampaigns zoneId={id} />
+                <LinkedCampaigns zoneId={id} />
+            </div>
+            <Dialog
+                open={isTagDialogOpen}
+                onOpenChange={(nextOpen) => {
+                    setIsTagDialogOpen(nextOpen);
+                    if (!nextOpen) setIsTagCopied(false);
+                }}
+            >
+                <DialogContent className="bg-light-background text-white">
+                    <DialogHeader>
+                        <DialogTitle>Generated zone tag</DialogTitle>
+                        <DialogDescription className="text-gray-400">
+                            Copy this tag and add it to the publisher&apos;s page.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <pre className="max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-white/10 bg-black/30 p-4 text-xs text-gray-200">
+                        {generatedTag}
+                    </pre>
+                    <DialogFooter className="bg-light-background">
+                        <Button
+                            type="button"
+                            onClick={async () => {
+                                if (!generatedTag) return;
+                                await navigator.clipboard.writeText(generatedTag);
+                                setIsTagCopied(true);
+                                showToaster("Tag copied to clipboard.", "success");
+                            }}
+                        >
+                            {isTagCopied ? <Check className="size-4" /> : <Copy className="size-4" />}
+                            {isTagCopied ? "Copied" : "Copy tag"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </main>
-    )
+    );
 }

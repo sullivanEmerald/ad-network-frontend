@@ -195,8 +195,6 @@ export default function PublisherDetailsPage() {
                                                             throw new Error("The tag response was empty");
                                                         }
 
-                                                        alert(JSON.stringify(response.tag, null, 2))
-
                                                         setGeneratedTag(response.tag);
                                                         setIsTagCopied(false);
                                                         setIsTagDialogOpen(true);

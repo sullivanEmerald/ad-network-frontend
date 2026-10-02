@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const zoneSchema = z.object({
     name: z.string().trim().min(2, "Zone name must be at least 2 characters").max(80, "Zone name must be under 80 characters"),
+    mode: z.enum(["automatic", "manual"]),
     width: z.number().int("Width must be a whole number").min(1, "Width must be greater than 0").max(5000, "Width must be under 5000 pixels"),
     height: z.number().int("Height must be a whole number").min(1, "Height must be greater than 0").max(5000, "Height must be under 5000 pixels"),
     type: z.union([

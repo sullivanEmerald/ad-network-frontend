@@ -8,5 +8,6 @@ export type PublisherZone = {
     height: number;
     type: string;
     status: "active" | "inactive" | string;
-    campaignsCount: number
+    campaignsCount: number;
+    mode : string;
 };
