@@ -4,14 +4,14 @@ import {
     linkZoneToCampaign,
     unlinkZoneFromCampaign as unlinkZoneFromCampaignRequest,
 } from "@/services/zone";
-import type { ZoneAds, ZoneCampaignResponse } from "@/types/zone";
+import type { ZoneAds, ZoneCampaignResponse, } from "@/types/zone";
 import type { PublisherZone, } from "@/types/publisher";
 import type { Store } from "@/types/store";
 
 export type ZoneSlice = {
     zone: PublisherZone | null;
     zoneCampaigns: ZoneAds[];
-    connectedZoneCampaigns: ZoneAds[];
+    assignedCampaign: ZoneAds | null;
     getZoneCampaigns: (zoneId: string) => Promise<void>;
     zoneCampaignState: {
         isFetching: boolean;
@@ -26,7 +26,7 @@ export type ZoneSlice = {
 export const createZoneSlice: StateCreator<Store, [["zustand/immer", never]], [], ZoneSlice> = (set) => ({
     zone: null,
     zoneCampaigns: [],
-    connectedZoneCampaigns: [],
+    assignedCampaign: null,
     zoneCampaignState: {
         isFetching: false,
         error: null,
@@ -38,14 +38,13 @@ export const createZoneSlice: StateCreator<Store, [["zustand/immer", never]], []
             state.zoneCampaignState.isFetching = true;
             state.zoneCampaignState.error = null;
             state.zoneCampaigns = [];
-            state.connectedZoneCampaigns = [];
         });
 
         try {
             const response = await getZoneCampaignsRequest(zoneId) as ZoneCampaignResponse;
             set((state) => {
                 state.zone = response.zone;
-                state.connectedZoneCampaigns = response.linkedCampaigns ?? [];
+                state.assignedCampaign = response.campaign ?? null;
                 state.zoneCampaigns = response.campaigns ?? [];
             });
         } catch (error) {
@@ -67,12 +66,10 @@ export const createZoneSlice: StateCreator<Store, [["zustand/immer", never]], []
         try {
             await linkZoneToCampaign(zoneId, campaignId);
             set((state) => {
-                const campaignIndex = state.zoneCampaigns.findIndex((campaign) => campaign._id === campaignId);
-                if (campaignIndex === -1) return;
-
-                const [campaign] = state.zoneCampaigns.splice(campaignIndex, 1);
-                if (!state.connectedZoneCampaigns.some((connected) => connected._id === campaignId)) {
-                    state.connectedZoneCampaigns.push(campaign);
+                const campaignToLink = state.zoneCampaigns.find((campaign) => campaign._id === campaignId);
+                if (campaignToLink) {
+                    state.assignedCampaign = campaignToLink;
+                    state.zoneCampaigns = state.zoneCampaigns.filter((campaign) => campaign._id !== campaignId);
                 }
             });
         } catch (error) {
@@ -92,12 +89,9 @@ export const createZoneSlice: StateCreator<Store, [["zustand/immer", never]], []
         try {
             await unlinkZoneFromCampaignRequest(zoneId, campaignId);
             set((state) => {
-                const campaignIndex = state.connectedZoneCampaigns.findIndex((campaign) => campaign._id === campaignId);
-                if (campaignIndex === -1) return;
-
-                const [campaign] = state.connectedZoneCampaigns.splice(campaignIndex, 1);
-                if (!state.zoneCampaigns.some((matched) => matched._id === campaignId)) {
-                    state.zoneCampaigns.push(campaign);
+                if (state.assignedCampaign && state.assignedCampaign._id === campaignId) {
+                    state.zoneCampaigns.push(state.assignedCampaign);
+                    state.assignedCampaign = null;
                 }
             });
         } catch (error) {

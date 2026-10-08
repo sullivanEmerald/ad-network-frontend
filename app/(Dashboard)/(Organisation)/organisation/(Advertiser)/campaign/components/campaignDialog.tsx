@@ -14,7 +14,7 @@ import {
 
 export type CampaignDialogProps = {
     campaign: Partial<CampaignRecord> & { id: string };
-    budget: string;
+    budget?: string | "";
     triggerLabel?: string;
     buttonOnClick?: () => void;
 };
@@ -112,8 +112,8 @@ export default function CampaignDialog({ campaign, budget, triggerLabel = "View 
                     <DetailSection title="Overview">
                         <dl className="grid gap-5 sm:grid-cols-2">
                             <Detail label="Campaign name" value={campaign.campaignName} />
-                            <Detail label="Status" value={<CampaignStatus status={campaign.status} isSchedule={campaign.isSchedule} />} />
-                            <Detail label="Objective" value={formatLabel(campaign.objective)} />
+                            <Detail label="Status" value={<CampaignStatus status={campaign.status} isSchedule={campaign.isScheduled} />} />
+                            {/* <Detail label="Objective" value={formatLabel(campaign.objective)} /> */}
                         </dl>
                     </DetailSection>
                     <DetailSection title="Budget and schedule">
@@ -121,7 +121,7 @@ export default function CampaignDialog({ campaign, budget, triggerLabel = "View 
                             <Detail label="Budget type" value={formatLabel(campaign.budgetType)} />
                             <Detail label="Budget amount" value={budget} />
                             <Detail label="Pacing" value={formatLabel(campaign.pacing)} />
-                            <Detail label="Delivery" value={campaign.isSchedule ? "Scheduled delivery" : "Immediate delivery"} />
+                            {/* <Detail label="Delivery" value={campaign.isSchedule ? "Scheduled delivery" : "Immediate delivery"} /> */}
                             <Detail label="Start date" value={formatDate(campaign.startDate)} />
                             <Detail label="End date" value={formatDate(campaign.endDate)} />
                         </dl>

@@ -10,9 +10,9 @@ export const createCampaign = async (data: any) => {
     }
 };
 
-export const setCampaigns = async (campaignId: string) => {
+export const setCampaigns = async (campaignId: string, zoneId: string | null) => {
     try {
-        const response = await axiosInstance.patch(`/campaigns/${campaignId}/launch`);
+        const response = await axiosInstance.patch(`/campaigns/${campaignId}/${zoneId}/launch`);
         return response.data;
     } catch (error) {
         console.error("Error saving campaign draft:", error);
@@ -71,4 +71,22 @@ export const getCampaignSummary = async (campaignId: string) => {
     }
 }
 
+export const storeCampaign = async (campaignId: string) => {
+    try {
+        const response = await axiosInstance.patch(`/campaigns/${campaignId}/store`);
+        return response.data;
+    } catch (error) {
+        console.error("Error storing campaign:", error);
+        throw error;
+    }
+}
 
+export const getEligibleZonesForCampaign = async (campaignId: string) => {
+    try {
+        const response = await axiosInstance.get(`/campaigns/${campaignId}/eligible-zones`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching eligible zones:", error);
+        throw error;
+    }
+}

@@ -57,7 +57,7 @@ const codeZoneTypes = [
 
 
 export default function ZonePage() {
-    const { zones, createZone, isLoading, iscreatingZone, getZones, isGeneratingTag, generateZoneTag } = useStore(useShallow((state) => ({
+    const { zones, createZone, isLoading, iscreatingZone, isFetching, getZones, isGeneratingTag, generateZoneTag } = useStore(useShallow((state) => ({
         createZone: state.createZone,
         isLoading: state.publisherState.isFetching,
         iscreatingZone: state.publisherState.isCreatingZone,
@@ -65,6 +65,7 @@ export default function ZonePage() {
         getZones: state.getZone,
         isGeneratingTag: state.publisherState.isGeneratingTag,
         generateZoneTag: state.generateZoneTag,
+        isFetching: state.zoneCampaignState.isFetching,
 
     })));
     const router = useRouter();

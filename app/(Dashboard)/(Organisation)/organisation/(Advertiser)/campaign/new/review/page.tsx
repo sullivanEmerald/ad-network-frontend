@@ -27,19 +27,23 @@ import { useShallow } from "zustand/react/shallow";
 import CampaignHeader from "@/components/campaign/header";
 import { useSearchParams } from "next/navigation";
 import { organisationEndpoints } from "@/endpoints/organisation";
+import Button from "@/components/common/button";
+import { storeCampaign } from "@/services/campaign";
+import { LineLoader } from "@/components/common/lineLoader";
 
 export default function ReviewStep() {
     const search = useSearchParams();
     const campaignId = search.get("campaignId")
-    const { getSummary, isLoading, campaignReview, launchCampaign, isCreatingCampaign } = useStore(useShallow((state) => ({
+    const { getSummary, isLoading, campaignReview, launchCampaign, storeCampaign, isStoringCampaign, isCreatingCampaign } = useStore(useShallow((state) => ({
         getSummary: state.getCampaignSummary,
         isLoading: state.campaignState.isGettingSummary,
         campaignReview: state.campaignReview,
         launchCampaign: state.launchCampaign,
-        isCreatingCampaign: state.campaignState.isCreating
+        isCreatingCampaign: state.campaignState.isCreating,
+        storeCampaign: state.storeCampaign,
+        isStoringCampaign: state.campaignState.isStoringCampaign
     })));
     const router = useRouter();
-
 
     useEffect(() => {
         if (campaignId) getSummary(campaignId);
@@ -123,19 +127,47 @@ export default function ReviewStep() {
                             {/* <SummaryRow icon={WalletCards} label="Spend" value={draft?.budgetAmount ? `$${draft.budgetAmount.toLocaleString()} / ${draft.budgetType}` : "Not set"} /> */}
                             {/* <SummaryRow icon={Smartphone} label="Devices" value={`${draft?.devices?.length ?? 0} selected`} /> */}
                         </div>
-                        <button
-                            type="button"
-                            disabled={isCreatingCampaign || isLoading}
-                            onClick={async () => {
-                                if (!campaignId) return;
-                                await launchCampaign(campaignId)
-                                router.push(organisationEndpoints.dashboard)
-                            }}
-                            className="mt-7 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-ink-950 transition hover:bg-primary/80 disabled:cursor-not-allowed disabled:opacity-40"
-                        >
-                            {false ? "Launching..." : "Launch campaign"}
-                            {/* {!isCreating && <ChevronRight className="h-4 w-4" />} */}
-                        </button>
+                        <div className="mt-6 flex flex-col gap-3">
+                            <button
+                                type="button"
+                                disabled={isCreatingCampaign || isLoading || isStoringCampaign}
+                                onClick={async () => {
+                                    if (!campaignId) return;
+                                    await launchCampaign(campaignId)
+                                    router.push(organisationEndpoints.campaigns)
+                                }}
+                                className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-ink-950 transition hover:bg-primary/80 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                {isCreatingCampaign ? (
+                                    <div className="flex items-center gap-2">
+                                        <LineLoader />
+                                        Launching...
+                                    </div>
+                                ) : "Launch campaign"}
+                                {/* {!isCreating && <ChevronRight className="h-4 w-4" />} */}
+                            </button>
+                            <button
+                                type="button"
+                                disabled={isStoringCampaign || isLoading || isCreatingCampaign}
+                                onClick={async () => {
+                                    if (!campaignId) return;
+                                    try {
+                                        await storeCampaign(campaignId);
+                                        router.push(organisationEndpoints.campaigns)
+                                    } catch (error) {
+                                        console.error("Error storing campaign:", error);
+                                    }
+                                }}
+                                className="flex w-full items-center justify-center gap-2 rounded-lg bg-green-700 px-4 py-3 text-sm font-semibold text-ink-950 transition hover:bg-green-700/80 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                {isStoringCampaign ? (
+                                    <div className="flex items-center gap-2">
+                                        <LineLoader />
+                                        Storing...
+                                    </div>
+                                ) : "Store campaign"}
+                            </button>
+                        </div>
                         <button type="button" onClick={() => router.back()} className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white/70 transition hover:bg-white/10 hover:text-white">
                             <ArrowLeft className="h-4 w-4" />
                             Back to editing

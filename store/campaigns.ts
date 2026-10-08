@@ -1,24 +1,27 @@
 import { StateCreator } from "zustand";
 import { FullCampaignData } from "@/lib/schemas/campaign-schema";
 import { Store } from "@/types/store";
-import { createCampaign, getAllDrafts, getCampaigns as getCampaignsRequest, getDraftById, createDraft, getCampaignSummary, setCampaigns } from '@/services/campaign';
+import { createCampaign, getAllDrafts, getCampaigns as getCampaignsRequest, getDraftById, createDraft, getCampaignSummary, setCampaigns, storeCampaign, getEligibleZonesForCampaign } from '@/services/campaign';
 import { CampaignCreationResponse, CampaignDraft, CampaignRecord, CampaignReviewSummary } from "@/types/campaign";
 import { showToaster } from "@/components/common/toast";
 import { campaignSchema } from "@/lib/schemas/campaign-schema";
 import { BannerFormData } from "@/lib/schemas/banner";
 import { createBanner } from "@/services/banner";
 import { CreateBannerData } from "@/types/banner";
+import { PublisherZone } from "@/types/publisher";
 
 
 export type CampaignSlice = {
     campaignDraft: FullCampaignData | null;
+    campaignZones: PublisherZone[] | [];
     campaignReview: CampaignReviewSummary | null;
     campaigns: Array<Partial<CampaignRecord> & { id: string }>;
     drafts: Array<Partial<CampaignDraft> & { id: string; currentStep: number; completedSteps: number[]; lastSavedAt: string | null, status: string }>;
     setCampaignDraft: (draft: FullCampaignData) => void;
     updateCampaignDraft: (updates: Partial<FullCampaignData>) => void;
     clearCampaignDraft: () => void;
-    launchCampaign: (campaignId: string) => Promise<void>;
+    launchCampaign: (campaignId: string, zoneId?: string | null) => Promise<void>;
+    storeCampaign: (campaignId: string) => Promise<void>;
     createCampaign: (data: Partial<FullCampaignData>) => Promise<CampaignCreationResponse>;
     createCampaignBanner: (data: CreateBannerData, campaignId: string | null) => Promise<void>;
     createDraft: (draft: Partial<CampaignDraft>, draftId?: string | null, status?: string) => Promise<CampaignCreationResponse>;
@@ -31,6 +34,7 @@ export type CampaignSlice = {
     setReviveCampaignId: (campaignId: string | null) => void;
     clearDraft: () => void;
     getCampaignSummary: (campaignId: string) => Promise<CampaignReviewSummary>;
+    getEligibleZonesForCampaign: (campaignId: string) => Promise<void>;
     campaignState: {
         isSaving: false,
         isCreating: false,
@@ -38,7 +42,8 @@ export type CampaignSlice = {
         isFetchingDraft: false,
         isGettingCampaigns: false,
         isCreatingCampaign: false,
-        isGettingSummary: false
+        isGettingSummary: false,
+        isStoringCampaign: false
     }
 };
 
@@ -47,6 +52,7 @@ export const createCampaignSlice: StateCreator<Store, [['zustand/immer', never]]
     campaignReview: null,
     campaigns: [],
     drafts: [],
+    campaignZones: [],
     draftId: null,
     campaignId: null,
     campaignState: {
@@ -56,7 +62,8 @@ export const createCampaignSlice: StateCreator<Store, [['zustand/immer', never]]
         isFetchingDraft: false,
         isGettingCampaigns: false,
         isCreatingCampaign: false,
-        isGettingSummary: false
+        isGettingSummary: false,
+        isStoringCampaign: false
     },
     setCampaignDraft: (draft) => set({ campaignDraft: draft }),
     updateCampaignDraft: (updates) => {
@@ -82,7 +89,7 @@ export const createCampaignSlice: StateCreator<Store, [['zustand/immer', never]]
         });
     },
     clearCampaignDraft: () => set({ campaignDraft: null }),
-    launchCampaign: async (campaignId) => {
+    launchCampaign: async (campaignId, zoneId = null) => {
         set((state: { campaignState: any }) => ({
             campaignState: {
                 ...state.campaignState,
@@ -90,7 +97,16 @@ export const createCampaignSlice: StateCreator<Store, [['zustand/immer', never]]
             },
         }));
         try {
-            const response = await setCampaigns(campaignId);
+            const response = await setCampaigns(campaignId, zoneId);
+            if (response.zonesLinked === 0 && response.zonesFailed === 0) {
+                set((state: { campaigns: any[] }) => ({
+                    campaigns: state.campaigns.map((campaign) =>
+                        campaign.id === campaignId ? { ...campaign, status: "assigned", isRunning: new Date(campaign.startDate).getTime() <= Date.now() && (!campaign.endDate || new Date(campaign.endDate).getTime() >= Date.now()) } : campaign
+                    ),
+                }));
+                showToaster("No zone found matching banner height and width. Campaign has been queued for automatic placement.", "success");
+                return response;
+            }
             showToaster("Campaign Launched", "success");
             return response;
         } catch (error) {
@@ -260,6 +276,56 @@ export const createCampaignSlice: StateCreator<Store, [['zustand/immer', never]]
                     isGettingSummary: false,
                 },
             }));
+        }
+    },
+
+    storeCampaign: async (campaignId) => {
+        set((state: { campaignState: any }) => ({
+            campaignState: {
+                ...state.campaignState,
+                isStoringCampaign: true,
+            },
+        }));
+
+        try {
+            const response = await storeCampaign(campaignId)
+            showToaster('Campaign stored successfully', 'success');
+            return response;
+        } catch (error) {
+            console.error("Error storing campaign:", error);
+            throw error;
+        } finally {
+            set((state: { campaignState: any }) => ({
+                campaignState: {
+                    ...state.campaignState,
+                    isStoringCampaign: false,
+                },
+            }));
+        }
+    },
+
+    getEligibleZonesForCampaign: async (campaignId) => {
+        // set((state: { campaignState: any }) => ({
+        //     campaignState: {
+        //         ...state.campaignState,
+        //         isFetching: true,
+        //     },
+        // }));
+
+        try {
+            const eligibleZones = await getEligibleZonesForCampaign(campaignId);
+            set({ campaignZones: eligibleZones });
+            return eligibleZones;
+        } catch (error) {
+            console.error("Error fetching eligible zones:", error);
+            throw error;
+        } finally {
+            // set((state: { campaignState: any }) => ({
+            //     campaignState: {
+            //         ...state.campaignState,
+            //         isFetching: false,
+            //     },
+            // }));
         }
     },
 

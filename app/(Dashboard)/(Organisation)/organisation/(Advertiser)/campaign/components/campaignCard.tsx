@@ -13,6 +13,7 @@ import { organisationEndpoints } from "@/endpoints/organisation";
 import CampaignActions from "./campaignActions";
 import { bannerEndpoints } from "@/endpoints/banner";
 import { formatDate, formatLabel, formatGeo, formatDevices } from "./helpers/campaign-helpers";
+import { getStatusColor } from "@/data/constants";
 
 type CampaignCardProps = {
     items: Array<Partial<CampaignRecord> & { id: string }>;
@@ -48,13 +49,6 @@ export default function CampaignCard({ items }: CampaignCardProps) {
             ) : (
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {items.map((campaign) => {
-                        const isDraft = campaign.status?.toUpperCase() === "DRAFT";
-                        const statusLabel = campaign.status?.toUpperCase() === "ACTIVE"
-                            ? campaign.isSchedule ? "Scheduled" : "Active"
-                            : campaign.status?.toUpperCase() === "DRAFT" ? "Draft" : formatLabel(campaign.status);
-                        const budget = campaign.budgetAmount
-                            ? `$${campaign.budgetAmount.toLocaleString()} ${campaign.budgetType === "daily" ? "/ day" : "total"}`
-                            : "Not set";
 
                         return (
                             <Card key={campaign.id} className="border border-gray-700 bg-transparent text-white">
@@ -64,27 +58,22 @@ export default function CampaignCard({ items }: CampaignCardProps) {
                                             <CardTitle className="truncate text-base text-white">
                                                 {campaign.campaignName || "Untitled campaign"}
                                             </CardTitle>
-                                            <p className="mt-1 text-sm text-gray-400">{formatLabel(campaign.objective)}</p>
                                         </div>
                                         <span
-                                            className={cn(
-                                                "shrink-0 rounded-full px-2 py-1 text-xs capitalize",
-                                                statusLabel === "Active" || statusLabel === "Scheduled"
-                                                    ? "bg-green-600 text-white"
-                                                    : "bg-white/10 text-gray-300"
-                                            )}
+                                            className="shrink-0 rounded-full px-2 py-1 text-xs"
+                                            style={{ backgroundColor: getStatusColor(campaign.status || "") }}
                                         >
-                                            {statusLabel}
+                                            {campaign.status}
                                         </span>
                                     </div>
                                 </CardHeader>
                                 <CardContent className="grid gap-4 pt-4 sm:grid-cols-2">
-                                    <Detail label="Budget" value={budget} />
+                                    {/* <Detail label="Budget" value={budget} /> */}
                                     <Detail label="Schedule" value={`${formatDate(campaign.startDate)} - ${formatDate(campaign.endDate)}`} />
                                     <Detail label="Locations" value={formatGeo(campaign.geo)} />
                                     <Detail label="Devices" value={formatDevices(campaign.devices)} />
                                     <div className="flex w-full items-center justify-between sm:col-span-2">
-                                        <CampaignActions campaign={campaign} budget={budget} buttonOnClick={() => addBanners(campaign.id)} triggerLabel='Manage' />
+                                        <CampaignActions campaign={campaign} buttonOnClick={() => addBanners(campaign.id)} triggerLabel='Manage' />
                                     </div>
                                 </CardContent>
                             </Card>

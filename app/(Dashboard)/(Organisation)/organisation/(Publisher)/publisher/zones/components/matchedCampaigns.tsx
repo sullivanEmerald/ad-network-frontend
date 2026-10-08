@@ -8,13 +8,14 @@ import CampaignSectionHeader from "./header";
 import { NotFoundComponent } from "@/components/common/notFound";
 
 export default function MatchedCampaigns({ zoneId }: { zoneId: string }) {
-    const { zoneCampaigns, isFetching, error, linkingCampaignId, linkZoneToCampaign } = useStore(
+    const { zoneCampaigns, isFetching, assignedCampaign, linkingCampaignId, linkZoneToCampaign } = useStore(
         useShallow((state) => ({
             zoneCampaigns: state.zoneCampaigns,
             isFetching: state.zoneCampaignState.isFetching,
             error: state.zoneCampaignState.error,
             linkZoneToCampaign: state.linkZoneToCampaign,
             linkingCampaignId: state.zoneCampaignState.linkingCampaignId,
+            assignedCampaign: state.assignedCampaign,
         })),
     );
 
@@ -24,8 +25,8 @@ export default function MatchedCampaigns({ zoneId }: { zoneId: string }) {
                 title="Matched Campaigns"
                 subtitle="These campaigns have banners that match the size of this zone."
             />
-            {isFetching ? <Loader /> : zoneCampaigns.length === 0 ? (
-                <NotFoundComponent title="No matched campaigns" subTitle="There are no campaigns with banners that match the size of this zone." />
+            {zoneCampaigns.length === 0 ? (
+                <NotFoundComponent title={assignedCampaign ? "There are no other matching campaigns" : "No matched campaigns"} subTitle="There are no campaigns with banners that match the size of this zone." />
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                     {zoneCampaigns.map((campaign) => {
@@ -90,9 +91,9 @@ export default function MatchedCampaigns({ zoneId }: { zoneId: string }) {
                                         </p>
                                     </div>
                                     <Button
-                                        className="ml-auto"
+                                        className={`ml-auto ${assignedCampaign ? "cursor-not-allowed opacity-50" : ""}`}
                                         onClick={() => void linkZoneToCampaign(zoneId, campaign._id)}
-                                        disabled={linkingCampaignId !== null}
+                                        disabled={linkingCampaignId !== null || assignedCampaign !== null}
                                     >
                                         {linkingCampaignId === campaign._id
                                             ? <LineLoader />

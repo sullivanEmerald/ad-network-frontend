@@ -18,11 +18,12 @@ import {
 } from "@/components/ui/dialog";
 import { LoaderCircle, Plus, Copy, Check } from "lucide-react";
 import { LineLoader } from "@/components/common/lineLoader";
+import { Loader } from "@/components/common/loader";
 
 export default function PlacementZone() {
     const { id } = useParams<{ id: string }>();
 
-    const { zone, getZoneCampaigns, createZone, isLoading, iscreatingZone, getZones, isGeneratingTag, generateZoneTag } = useStore(useShallow((state) => ({
+    const { zone, getZoneCampaigns, isGeneratingTag, isFetching, generateZoneTag, assignedCampaign } = useStore(useShallow((state) => ({
         createZone: state.createZone,
         isLoading: state.publisherState.isFetching,
         iscreatingZone: state.publisherState.isCreatingZone,
@@ -31,6 +32,8 @@ export default function PlacementZone() {
         generateZoneTag: state.generateZoneTag,
         getZoneCampaigns: state.getZoneCampaigns,
         zone: state.zone,
+        assignedCampaign: state.assignedCampaign,
+        isFetching: state.zoneCampaignState.isFetching,
 
     })));
     const [generatedTag, setGeneratedTag] = useState<string | null>(null);
@@ -78,8 +81,15 @@ export default function PlacementZone() {
                 </Button>
             </header>
             <div className="space-y-6">
-                <MatchedCampaigns zoneId={id} />
-                <LinkedCampaigns zoneId={id} />
+                {isFetching ? (
+                    <Loader />
+                ) : (
+                    <>
+                        {assignedCampaign && <LinkedCampaigns zoneId={id} />}
+                        <MatchedCampaigns zoneId={id} />
+                    </>
+                )}
+
             </div>
             <Dialog
                 open={isTagDialogOpen}

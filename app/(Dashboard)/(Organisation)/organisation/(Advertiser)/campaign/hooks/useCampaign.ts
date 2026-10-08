@@ -11,26 +11,41 @@ export const useCampaign = () => {
     })))
 
     const activeCampaigns = useMemo(() => {
-        return campaigns.filter((campaign) => campaign.status?.toLowerCase() === "linked" && campaign.isScheduled === false)
+        return campaigns.filter((campaign) => campaign.status?.toLowerCase() === "assigned" && campaign.isRunning)
     }, [campaigns])
 
-    const pendingCampaigns = useMemo(() => {
-        return campaigns.filter((campaign) => campaign.status?.toLowerCase() === "pending")
+    const scheduledCampaigns = useMemo(() => {
+        return campaigns.filter((campaign) => campaign.status?.toLowerCase() === "assigned" && !campaign.isRunning)
     }, [campaigns])
 
-    const linkedCampaigns = useMemo(() => {
-        return campaigns.filter((campaign) => campaign.status?.toLowerCase() === "linked" && campaign.isScheduled === true)
+    const queuedCampaigns = useMemo(() => {
+        return campaigns.filter((campaign) => campaign.status?.toLowerCase() === "queued")
     }, [campaigns])
+
+    const completedCampaigns = useMemo(() => {
+        return campaigns.filter((campaign) => campaign.status?.toLowerCase() === "completed" && !campaign.isRunning)
+    }, [campaigns])
+
+    const storedCampaigns = useMemo(() => {
+        return campaigns.filter((campaign) => campaign.status?.toLowerCase() === "stored")
+    }, [campaigns])
+
+
 
     return {
         getCampaigns,
         activeCampaigns,
         totalActiveCampaigns: activeCampaigns.length,
-        pendingCampaigns,
-        totalPendingCampaigns: pendingCampaigns.length,
-        linkedCampaigns,
-        totalLinkedCampaigns: linkedCampaigns.length,
-        isloading,
-        campaigns
+        scheduledCampaigns,
+        totalScheduledCampaigns: scheduledCampaigns.length,
+        queuedCampaigns,
+        totalQueuedCampaigns: queuedCampaigns.length,
+        completedCampaigns,
+        totalCompletedCampaigns: completedCampaigns.length,
+        storedCampaigns,
+        totalStoredCampaigns: storedCampaigns.length,
+        campaigns,
+        totalCampaigns: campaigns.length,
+        isloading
     }
 }

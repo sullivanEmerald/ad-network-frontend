@@ -18,7 +18,9 @@ export type ZoneAds = {
 
 export type ZoneCampaignResponse = {
     zone: PublisherZone & { campaigns?: ZoneAds[] };
+    campaign?: ZoneAds | null;
     campaigns?: ZoneAds[];
+    isLinked: boolean;
     connectedCampaigns?: ZoneAds[];
     linkedCampaigns?: ZoneAds[];
 };

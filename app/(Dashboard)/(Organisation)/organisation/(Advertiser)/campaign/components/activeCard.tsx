@@ -13,6 +13,7 @@ import { organisationEndpoints } from "@/endpoints/organisation";
 import { bannerEndpoints } from "@/endpoints/banner";
 import CampaignActions from "./campaignActions";
 import { formatDate, formatLabel, formatGeo, formatDevices } from "./helpers/campaign-helpers";
+import { getStatusColor } from "@/data/constants";
 
 type CampaignCardProps = {
     items: Array<Partial<CampaignRecord> & { id: string }>;
@@ -46,11 +47,10 @@ export default function ActiveCard({ items }: CampaignCardProps) {
             {isloading ? (
                 <Loader />
             ) : items.length < 1 ? (
-                <NotFoundComponent title="No Campaign for this filter. Reselect or Create Campaign" buttonText="Create Campaign" onButtonClick={createCampaign} />
+                <NotFoundComponent title="No Campaign for this filter. Reselect or Create Campaign" subTitle="Try adjusting your filters or create a new campaign." buttonText="Create Campaign" onButtonClick={createCampaign} />
             ) : (
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {items.map((campaign) => {
-                        const isDraft = campaign.status?.toUpperCase() === "DRAFT";
                         const statusLabel = campaign.status?.toUpperCase() === "ACTIVE"
                             ? campaign.isScheduled ? "Scheduled" : "Active"
                             : campaign.status?.toUpperCase() === "DRAFT" ? "Draft" : formatLabel(campaign.status);
@@ -69,12 +69,8 @@ export default function ActiveCard({ items }: CampaignCardProps) {
                                             {/* <p className="mt-1 text-sm text-gray-400">{formatLabel(campaign.objective)}</p> */}
                                         </div>
                                         <span
-                                            className={cn(
-                                                "shrink-0 rounded-full px-2 py-1 text-xs capitalize",
-                                                statusLabel === "Active" || statusLabel === "Scheduled"
-                                                    ? "bg-green-600 text-white"
-                                                    : "bg-green-600 text-white"
-                                            )}
+                                            className="shrink-0 rounded-full px-2 py-1 text-xs"
+                                            style={{ backgroundColor: getStatusColor(campaign.status?.toLowerCase() || "") }}
                                         >
                                             {statusLabel}
                                         </span>

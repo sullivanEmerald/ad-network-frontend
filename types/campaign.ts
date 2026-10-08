@@ -21,6 +21,7 @@ export type CampaignRecord = Partial<Omit<FullCampaignData, "startDate" | "endDa
     updatedAt: string;
     isScheduled: boolean;
     reviveCampaignId: number;
+    isRunning: boolean;
 };
 
 export type CampaignCreationResponse = Partial<CampaignRecord> & {

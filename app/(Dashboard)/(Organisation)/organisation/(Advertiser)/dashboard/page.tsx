@@ -17,9 +17,9 @@ export default function CampaignsPage() {
     const drafts = useStore((state) => state.drafts);
     const router = useRouter();
 
-    useEffect(() => {
-        getCampaignDraft();
-    }, []);
+    // useEffect(() => {
+    //     getCampaignDraft();
+    // }, []);
 
 
     return (

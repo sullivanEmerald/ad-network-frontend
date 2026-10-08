@@ -67,17 +67,17 @@ export const getStatusColor = (status: string) => {
     switch (status) {
         case "pending":
             return "#140f30";
-        case "published":
-            return "#F2720C";
+        case "queued":
+            return "#74065383";
         case "inProgress":
             return "#600D07";
-        case "completed":
+        case "stored":
             return "#1C4C2D";
         case "assigned":
-            return "#224074";
+            return "#B91C1C";
         case "workers":
             return '#FCB404';
-        case "approved":
+        case "completed":
             return "#2E7D32";
         case "applied":
             return "#B91C1C";

@@ -8,20 +8,25 @@ import CampaignHeader from "@/components/campaign/header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import CampaignCard from "./components/campaignCard";
 import { useCampaign } from "./hooks/useCampaign";
-import DraftCard from "./components/draftCard";
+import DraftCard from "./components/storedCard";
 import ActiveCard from "./components/activeCard";
+import { getStatusColor } from "@/data/constants";
+import StoredCampaignCard from "./components/storedCard";
 
 
 export default function AdvertiserCampaignPage() {
     const clearDraft = useStore((state) => state.clearDraft);
     const {
         totalActiveCampaigns,
-        linkedCampaigns,
-        totalLinkedCampaigns,
-        pendingCampaigns,
-        totalPendingCampaigns,
+        scheduledCampaigns,
+        totalQueuedCampaigns,
+        totalScheduledCampaigns,
+        queuedCampaigns,
         getCampaigns,
         activeCampaigns,
+        totalCampaigns,
+        storedCampaigns,
+        totalStoredCampaigns,
     } = useCampaign();
     const router = useRouter();
 
@@ -31,7 +36,7 @@ export default function AdvertiserCampaignPage() {
 
     return (
         <div>
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-2 border-b border-gray-700">
                 <CampaignHeader title="Campaigns" description="Create and manage your advertising campaigns" />
                 <Button
                     onClick={() => {
@@ -50,31 +55,40 @@ export default function AdvertiserCampaignPage() {
                     <TabsList variant="line" className="mb-2 flex flex-row gap-8 border-none">
                         <TabsTrigger value="active" className="cursor-pointer">
                             <p className="text-white">
-                                Active Campaigns{" "}
+                                Running Campaigns{" "}
                                 <span className="rounded-full bg-primary/40 px-2 py-0.5 text-white">{totalActiveCampaigns || 0}</span>
                             </p>
                         </TabsTrigger>
-                        <TabsTrigger value="pending" className="cursor-pointer">
+                        <TabsTrigger value="assigned" className="cursor-pointer">
                             <p className="text-white">
-                                Pending Campaigns{" "}
-                                <span className="rounded-full bg-primary/40 px-2 py-0.5 text-white">{totalPendingCampaigns || 0}</span>
+                                Upcoming Campaigns{" "}
+                                <span className="rounded-full bg-primary/40 px-2 py-0.5 text-white">{totalScheduledCampaigns || 0}</span>
                             </p>
                         </TabsTrigger>
-                        <TabsTrigger value="linked" className="cursor-pointer">
+                        <TabsTrigger value="queued" className="cursor-pointer">
                             <p className="text-white">
-                                InProgess Campaigns{" "}
-                                <span className="rounded-full bg-primary/40 px-2 py-0.5 text-white">{totalLinkedCampaigns || 0}</span>
+                                Queued Campaigns{" "}
+                                <span className="rounded-full bg-primary/40 px-2 py-0.5 text-white">{totalQueuedCampaigns || 0}</span>
+                            </p>
+                        </TabsTrigger>
+                        <TabsTrigger value="stored" className="cursor-pointer">
+                            <p className="text-white">
+                                Stored Campaigns{" "}
+                                <span className="rounded-full bg-primary/40 px-2 py-0.5 text-white">{totalStoredCampaigns || 0}</span>
                             </p>
                         </TabsTrigger>
                     </TabsList>
                     <TabsContent value="active">
                         <ActiveCard items={activeCampaigns} />
                     </TabsContent>
-                    <TabsContent value="pending">
-                        <CampaignCard items={pendingCampaigns} />
+                    <TabsContent value="assigned">
+                        <CampaignCard items={scheduledCampaigns} />
                     </TabsContent>
-                    <TabsContent value="linked">
-                        <DraftCard items={linkedCampaigns} />
+                    <TabsContent value="queued">
+                        <DraftCard items={queuedCampaigns} />
+                    </TabsContent>
+                    <TabsContent value="stored">
+                        <StoredCampaignCard items={storedCampaigns} />
                     </TabsContent>
                 </Tabs>
             </div>
