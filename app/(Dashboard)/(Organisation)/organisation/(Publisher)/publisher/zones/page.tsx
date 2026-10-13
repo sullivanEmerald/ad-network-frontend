@@ -44,6 +44,7 @@ const zonePresets = [
     { width: 336, height: 280, label: "Large Rectangle" },
     { width: 300, height: 600, label: "Half Page" },
     { width: 970, height: 250, label: "Billboard" },
+    { width: -1, height: -1, label: "Custom Size" },
 ];
 
 const codeZoneTypes = [
@@ -141,6 +142,7 @@ export default function ZonePage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                         {zones.map((zone) => {
                             const zoneType = codeZoneTypes.find((zoneType) => String(zoneType.value) === zone.type);
+                            const isCustom = zone.width === -1 && zone.height === -1;
                             return (
                                 <div
                                     key={zone.id}
@@ -149,7 +151,7 @@ export default function ZonePage() {
                                 >
                                     <h3 className="truncate font-semibold text-gray-400 text-md">{zone.name}</h3>
                                     <p className="text-lg text-white">
-                                        Dimensions: {zone.width} x {zone.height}px
+                                        {isCustom ? "Custom Dimensions" : `Dimensions: ${zone.width} x ${zone.height}px`}
                                     </p>
                                     <div className="flex items-center gap-4">
                                         <span className="text-gray-400">Available Campaign</span>
@@ -309,8 +311,8 @@ export default function ZonePage() {
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                        <Input label="Width (px)" type="number" min={1} error={errors.width?.message} {...register("width", { valueAsNumber: true })} />
-                        <Input label="Height (px)" type="number" min={1} error={errors.height?.message} {...register("height", { valueAsNumber: true })} />
+                        <Input label="Width (px)" type="number" min={-1} error={errors.width?.message} {...register("width", { valueAsNumber: true })} />
+                        <Input label="Height (px)" type="number" min={-1} error={errors.height?.message} {...register("height", { valueAsNumber: true })} />
                     </div>
                     <Input label="Description" placeholder="Top advertising placement" error={errors.description?.message} {...register("description")} />
                     <div>
