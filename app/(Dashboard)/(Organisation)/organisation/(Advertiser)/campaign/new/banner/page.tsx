@@ -52,8 +52,6 @@ export default function TargetingStep() {
 
     function validate(): boolean {
         const result = bannerFormSchema.safeParse(values);
-        alert(JSON.stringify(result, null, 2))
-        console.log('validation message', result)
         if (!result.success) {
             showToaster('validation error')
             const fieldErrors: Record<string, string> = {};

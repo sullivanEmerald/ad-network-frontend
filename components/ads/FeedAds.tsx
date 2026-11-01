@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { adsWarn, getFeedPlacement, type FeedPlacement } from '@/lib/ads/feedPlacement';
-import { loadReviveScript, requestReviveRefresh, reviveEvent } from '../../lib/ads/reviveLoader';
+import { loadReviveScript, requestReviveRefresh, reviveEvent } from '@/lib/ads/reviveLoader';
+import DisplayAvatar from '@/components/common/avatar';
 
 type FeedAdProps = { slotId: string };
 type EnabledPlacement = Extract<FeedPlacement, { enabled: true }>;
@@ -12,11 +13,19 @@ type Status = 'pending' | 'filled' | 'empty';
 const PREFETCH_MARGIN = '600px 0px'; // fetch config + script this far ahead of the viewport
 const VIEW_RATIO = 0.5;              // ask Revive for the ad only once half the slot is on screen
 const LOAD_TIMEOUT_MS = 6000;
-const MAX_HEIGHT_RATIO = 0.85;       // never render taller than 85% of the viewport
+const MAX_HEIGHT_RATIO = 0.85;       // the frame never exceeds 85% of the viewport height
+const MAX_UPSCALE = 1.5;             // small creatives may grow this much, no more (avoids blur)
 
+/**
+ * The slot is a FIXED-RATIO FRAME (the placement's width/height only define its shape).
+ * Whatever size Revive returns is scaled to fit inside it, centred, never cropped or stretched.
+ * This is what allows a zone with wildcard (*) dimensions to serve banners of any size.
+ */
 export function FeedAd({ slotId }: FeedAdProps) {
-    const boxRef = useRef<HTMLDivElement>(null);
-    const stageRef = useRef<HTMLDivElement>(null);
+    const boxRef = useRef<HTMLDivElement>(null);   // full-width wrapper: measured and observed
+    const frameRef = useRef<HTMLDivElement>(null); // the fixed-ratio frame
+    const stageRef = useRef<HTMLDivElement>(null); // holds Revive's <ins>, scaled to fit the frame
+    const frameDimsRef = useRef<{ w: number; h: number } | null>(null);
     const naturalRef = useRef<{ w: number; h: number } | null>(null);
 
     const [near, setNear] = useState(false);
@@ -24,22 +33,27 @@ export function FeedAd({ slotId }: FeedAdProps) {
     const [placement, setPlacement] = useState<EnabledPlacement | null>(null);
     const [status, setStatus] = useState<Status>('pending');
 
-    // Scale the creative to the available width (never upscale), and reserve its height.
     const fit = useCallback(() => {
         const box = boxRef.current;
+        const frameEl = frameRef.current;
         const stage = stageRef.current;
-        const natural = naturalRef.current;
-        if (!box || !stage || !natural) return;
+        const dims = frameDimsRef.current;
+        if (!box || !frameEl || !stage || !dims) return;
 
-        const scale = Math.min(
-            box.clientWidth / natural.w,
-            (window.innerHeight * MAX_HEIGHT_RATIO) / natural.h,
-            1,
+        const frameW = box.clientWidth;
+        const frameH = Math.min(
+            (frameW * dims.h) / dims.w,
+            window.innerHeight * MAX_HEIGHT_RATIO,
         );
+        frameEl.style.width = `${Math.round(frameW)}px`;
+        frameEl.style.height = `${Math.round(frameH)}px`;
+
+        const natural = naturalRef.current;
+        if (!natural) return; // creative size unknown until Revive answers
+        const scale = Math.min(frameW / natural.w, frameH / natural.h, MAX_UPSCALE);
         stage.style.width = `${natural.w}px`;
         stage.style.height = `${natural.h}px`;
-        stage.style.transform = `translateX(-50%) scale(${scale})`;
-        box.style.height = `${Math.round(natural.h * scale)}px`;
+        stage.style.transform = `translate(-50%, -50%) scale(${scale})`;
     }, []);
 
     // 1) Close to the viewport: fetch the (shared, cached) placement and warm up Revive's script.
@@ -75,7 +89,7 @@ export function FeedAd({ slotId }: FeedAdProps) {
                     setStatus('empty');
                     return;
                 }
-                naturalRef.current = { w: p.width, h: p.height };
+                frameDimsRef.current = { w: p.width, h: p.height };
                 setPlacement(p);
                 loadReviveScript(p.scriptUrl).catch((err) => {
                     if (cancelled) return;
@@ -203,19 +217,24 @@ export function FeedAd({ slotId }: FeedAdProps) {
             ref={boxRef}
             data-feed-ad-slot={slotId}
             aria-label="Sponsored content"
-            className={`feed-ad-slot relative my-4 w-full overflow-hidden ${status === 'pending' ? 'bg-neutral-100' : ''}`}
+            className="feed-ad-slot w-full"
             style={{ minHeight: 1 }}
         >
             <div
-                ref={stageRef}
-                className="absolute left-1/2 top-0"
-                style={{ transformOrigin: 'top center', visibility: status === 'filled' ? 'visible' : 'hidden' }}
-            />
-            {status === 'filled' && (
-                <span className="pointer-events-none absolute left-2 top-2 z-10 rounded bg-black/50 px-2 py-0.5 text-xs font-semibold text-white">
-                    Sponsored
-                </span>
-            )}
+                ref={frameRef}
+                className={`relative overflow-hidden w-full rounded-lg ${status === 'filled' ? 'bg-black' : 'bg-neutral-100'}`}
+            >
+                <div
+                    ref={stageRef}
+                    className="absolute left-1/2 top-1/2 object-cover"
+                    style={{ visibility: status === 'filled' ? 'visible' : 'hidden' }}
+                />
+                {status === 'filled' && (
+                    <span className="pointer-events-none absolute right-2 top-3 z-10 rounded bg-primary px-2 py-0.5 text-xs font-semibold text-white">
+                        Sponsored
+                    </span>
+                )}
+            </div>
         </div>
     );
 }

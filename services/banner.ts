@@ -2,7 +2,6 @@ import axiosInstance from "@/lib/axiosInstance";
 import type { CreateBannerData } from "@/types/banner";
 
 export const createBanner = async (campaignId: string | null, data: CreateBannerData) => {
-    alert(JSON.stringify(data, null, 2))
     const formData = new FormData();
     formData.append("name", data.name);
     formData.append("destinationUrl", data.destinationUrl);

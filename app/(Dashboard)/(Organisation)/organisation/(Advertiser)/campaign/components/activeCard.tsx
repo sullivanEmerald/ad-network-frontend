@@ -14,9 +14,16 @@ import { bannerEndpoints } from "@/endpoints/banner";
 import CampaignActions from "./campaignActions";
 import { formatDate, formatLabel, formatGeo, formatDevices } from "./helpers/campaign-helpers";
 import { getStatusColor } from "@/data/constants";
+import { Eye, MouseIcon, Activity } from "lucide-react";
+
+type CampaignStatistics = {
+    impressions?: number;
+    clicks?: number;
+    ctr?: number;
+};
 
 type CampaignCardProps = {
-    items: Array<Partial<CampaignRecord> & { id: string }>;
+    items: Array<Partial<CampaignRecord> & { id: string; statistics?: CampaignStatistics }>;
 };
 
 function Detail({ label, value }: { label: string; value: React.ReactNode }) {
@@ -24,6 +31,18 @@ function Detail({ label, value }: { label: string; value: React.ReactNode }) {
         <div className="space-y-1">
             <dt className="text-xs uppercase tracking-wide text-gray-400">{label}</dt>
             <dd className="text-sm text-white">{value || "Not set"}</dd>
+        </div>
+    );
+}
+
+function Metric({ icon: Icon, value }: { icon: React.ElementType; value: string }) {
+    return (
+        <div className="flex min-w-0 items-center gap-2">
+            <Icon aria-hidden="true" className="size-4 shrink-0 text-primary" />
+            <div className="min-w-0">
+                {/* <p className="truncate text-[11px] uppercase tracking-wide text-gray-400">{label}</p> */}
+                <p className="truncate text-sm font-semibold text-white">{value}</p>
+            </div>
         </div>
     );
 }
@@ -81,6 +100,23 @@ export default function ActiveCard({ items }: CampaignCardProps) {
                                     <Detail label="Schedule" value={`${formatDate(campaign.startDate)} - ${formatDate(campaign.endDate)}`} />
                                     <Detail label="Locations" value={formatGeo(campaign.geo)} />
                                     <Detail label="Devices" value={formatDevices(campaign.devices)} />
+                                    <div className="flex items-center gap-4" aria-label="Campaign performance">
+                                        <Metric
+                                            icon={Eye}
+                                            // label="Impressions"
+                                            value={(campaign.statistics?.impressions ?? 0).toLocaleString()}
+                                        />
+                                        <Metric
+                                            icon={MouseIcon}
+                                            // label="Clicks"
+                                            value={(campaign.statistics?.clicks ?? 0).toLocaleString()}
+                                        />
+                                        {/* <Metric
+                                            icon={Percent}
+                                            label="CTR"
+                                            value={`${(campaign.statistics?.ctr ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}%`}
+                                        /> */}
+                                    </div>
                                     <div className="flex w-full items-center justify-between sm:col-span-2">
                                         <CampaignActions campaign={campaign} budget={budget} buttonOnClick={() => addBanners(campaign.id)} triggerLabel='Manage' />
                                     </div>
