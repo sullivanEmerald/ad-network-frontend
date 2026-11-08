@@ -1,29 +1,72 @@
-import { FeedItems } from '@/components/ads/FeedItems';
-import { addFeedAdSlots } from '@/lib/feedUtils';
+// app/feed/page.tsx
+'use client';
 
-const posts = Array.from({ length: 40 }, (_, index) => ({
-    _id: index + 1,
-    title: `Post ${index + 1}`,
-}));
+import { useCallback, useEffect, useRef, useState } from 'react';
+import AdVideoPlayer from './components/AdVideoPlayer';
+import { ReviveAdPayload } from './types/ad';
+import { loadNext } from './service/adsRequests';
+import AdImageCard from "./components/adImageCard"
 
-// A short interval so several slots appear while testing; use 8 in production.
-const items = addFeedAdSlots(posts, 0, 4);
+export default function FeedPage() {
+    const [ads, setAds] = useState<ReviveAdPayload[]>([]);
+    const [activeId, setActiveId] = useState<string | null>(null);
+    const itemRefs = useRef<Map<string, HTMLElement>>(new Map());
 
-// Component names must start with a capital letter (the original `ads` breaks the hooks lint rules).
-export default function AdsPreviewPage() {
+    const loadAd = useCallback(async () => {
+        try {
+            const next = await loadNext();
+            if (!next) return;
+            setAds((prev) => [...prev, next]);
+        } catch (err) {
+            console.error('Error loading ad:', err);
+        }
+    }, []);
+
+    useEffect(() => {
+        loadAd();
+    }, [loadAd]);
+
+    // Which card is in view
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const visible = entries
+                    .filter((e) => e.isIntersecting)
+                    .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+                if (visible[0]?.target) {
+                    const id = (visible[0].target as HTMLElement).dataset.adKey;
+                    if (id) setActiveId(id);
+                }
+            },
+            { threshold: [0.4, 0.6, 0.75] },
+        );
+
+        itemRefs.current.forEach((el) => observer.observe(el));
+        return () => observer.disconnect();
+    }, [ads]);
+
+    const setItemRef = (key: string) => (el: HTMLDivElement | null) => {
+        if (el) itemRefs.current.set(key, el);
+        else itemRefs.current.delete(key);
+    };
+
     return (
-        <div className="mx-auto flex max-w-md flex-col gap-4 p-4">
-            <h1 className="text-2xl font-bold text-white">Ads preview</h1>
-            <p className="text-gray-300">
-                Testing page for feed ad slots. Not part of the production application.
-            </p>
-
-            <FeedItems
-                items={items}
-                renderPost={(post) => (
-                    <div className="rounded-lg border p-6 text-white">{post.title}</div>
-                )}
-            />
-        </div>
+        <main className="space-y-6">
+            {ads.map((ad) => {
+                const key = ad.tracking.impression[0] ?? ad.videoUrl;
+                return (
+                    <>
+                        <div key={ad.id} ref={setItemRef(key)} data-ad-key={key}>
+                            {ad.type === 'video' ? (
+                                <AdVideoPlayer ad={ad} isActive={activeId === key} onAdEnded={loadAd} />
+                            ) : (
+                                <AdImageCard ad={ad} isActive={activeId === key} />
+                            )}
+                        </div>
+                    </>
+                );
+            })}
+        </main>
     );
 }

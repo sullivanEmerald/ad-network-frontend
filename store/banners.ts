@@ -4,8 +4,9 @@ import {
     createBanner as createBannerRequest,
     deleteBanner as deleteBannerRequest,
     getBanners as getBannersRequest,
+    createVideoBanner,
 } from "@/services/banner";
-import type { Banner, CreateBannerData } from "@/types/banner";
+import type { Banner, CreateBannerData, CreateVideoBannerData } from "@/types/banner";
 import type { Store } from "@/types/store";
 
 
@@ -19,6 +20,7 @@ export type BannerSlice = {
     };
     getBanners: (campaignId: string) => Promise<void>;
     createBanner: (campaignId: string, data: CreateBannerData) => Promise<Banner | null>;
+    createVideoBanner: (campaignId: string, data: CreateVideoBannerData) => Promise<Banner | null>;
     deleteBanner: (campaignId: string, bannerId: string) => Promise<void>;
 };
 
@@ -99,6 +101,32 @@ export const createBannerSlice: StateCreator<Store, [["zustand/immer", never]], 
         } finally {
             set((state) => {
                 state.bannerState.isDeleting = false;
+            });
+        }
+    },
+    createVideoBanner: async (campaignId: string, data: CreateVideoBannerData) => {
+        set((state) => {
+            state.bannerState.isCreating = true;
+            state.bannerState.error = null;
+        });
+        try {
+            const banner = await createVideoBanner(campaignId, data);
+            if (banner) {
+                set((state) => {
+                    state.banners = [banner, ...state.banners];
+                });
+            }
+            showToaster("Video banner added successfully.", "success");
+            return banner;
+        } catch (error) {
+            console.error("Error creating video banner:", error);
+            set((state) => {
+                state.bannerState.error = "Unable to add this video banner.";
+            });
+            throw error;
+        } finally {
+            set((state) => {
+                state.bannerState.isCreating = false;
             });
         }
     },

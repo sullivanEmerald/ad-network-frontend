@@ -34,6 +34,7 @@ import {
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Switch } from "@/components/ui/switch";
+import { getNextZoneADS } from "@/services/zone";
 
 
 const zonePresets = [
@@ -48,12 +49,12 @@ const zonePresets = [
 ];
 
 const codeZoneTypes = [
-    { value: 0, label: "Banner, Button or Rectangle (standard banner)" },
-    { value: 1, label: "Interstitial / Floating DHTML" },
-    { value: 2, label: "Text ad" },
-    { value: 3, label: "Email/Newsletter" },
-    { value: 4, label: "Inline Video ad" },
-    { value: 5, label: "Overlay Video ad" },
+    { value: "0", label: "Banner, Button or Rectangle (standard banner)" },
+    { value: "1", label: "Interstitial / Floating DHTML" },
+    { value: "3", label: "Text ad" },
+    { value: "4", label: "Email/Newsletter" },
+    { value: "6", label: "Inline Video ad" },
+    { value: "7", label: "Overlay Video ad" },
 ];
 
 
@@ -90,6 +91,7 @@ export default function ZonePage() {
 
     useEffect(() => {
         getZones();
+        getNextZoneADS();
     }, [])
 
     const selectedWidth = useWatch({ control, name: "width" });
@@ -319,7 +321,7 @@ export default function ZonePage() {
                         <label htmlFor="zone-type" className="mb-1 block text-sm font-medium text-white">CodeZone type</label>
                         <Select
                             value={String(selectedType)}
-                            onValueChange={(value) => setValue("type", Number(value) as ZoneFormData["type"], { shouldDirty: true, shouldValidate: true })}
+                            onValueChange={(value) => setValue("type", value as ZoneFormData["type"], { shouldDirty: true, shouldValidate: true })}
                         >
                             <SelectTrigger id="zone-type" className="w-full">
                                 <SelectValue className="text-white">

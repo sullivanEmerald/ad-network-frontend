@@ -29,3 +29,14 @@ export const unlinkZoneFromCampaign = async (zoneId: string, campaignId: string)
         throw error;
     }
 };
+
+export const getNextZoneADS = async () => {
+    try {
+        const response = await axiosInstance.get(`/ads/placements/next`);
+        console.log("response from next zone ads", response.data)
+        return response.data;
+    } catch (error) {
+        console.log("error getting next zone ads", error);
+        throw error;
+    }
+}

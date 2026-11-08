@@ -2,17 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { type FullCampaignData } from "@/lib/schemas/campaign-schema";
-// import { useCampaignDraft } from "@/lib/hooks/useCampaignDraftContext";
-// import { Field } from "@/components/ui/Field";
 import { Field } from "@/components/ui/field";
 import { StepFooter } from "@/components/wizard/StepFooter";
 import countries from "i18n-iso-countries";
 import enLocale from "i18n-iso-countries/langs/en.json";
-import USFlag from "country-flag-icons/react/3x2/US";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import Button from "@/components/common/button";
+import { ImagePlus, UploadCloud, Video } from "lucide-react";
 import { useStore } from "@/store/store";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,6 +17,44 @@ import { CreateBannerData } from "@/types/banner";
 import { showToaster } from "@/components/common/toast";
 import { getImageDimensions } from "@/components/banners/helpers";
 
+type BannerFormat = "image" | "inline_video";
+
+const BANNER_FORMATS = [
+    {
+        value: "image" as const,
+        title: "Image ad",
+        description: "Upload an image for a standard display placement.",
+        Icon: ImagePlus,
+    },
+    {
+        value: "inline_video" as const,
+        title: "Inline video ad",
+        description: "Upload a video for an inline video placement.",
+        Icon: Video,
+    },
+];
+
+function getVideoMetadata(file: File): Promise<{ width: number; height: number; duration: number }> {
+    return new Promise((resolve, reject) => {
+        const video = document.createElement("video");
+        const objectUrl = URL.createObjectURL(file);
+
+        video.preload = "metadata";
+        video.onloadedmetadata = () => {
+            URL.revokeObjectURL(objectUrl);
+            if (!Number.isFinite(video.duration) || video.duration <= 0) {
+                reject(new Error("Unable to read video duration"));
+                return;
+            }
+            resolve({ width: video.videoWidth, height: video.videoHeight, duration: video.duration });
+        };
+        video.onerror = () => {
+            URL.revokeObjectURL(objectUrl);
+            reject(new Error("Unable to read video dimensions"));
+        };
+        video.src = objectUrl;
+    });
+}
 
 countries.registerLocale(enLocale);
 const GEO_NAMES = countries.getNames("en", { select: "official" });
@@ -31,36 +63,93 @@ const COUNTRY_LIST = Object.entries(GEO_NAMES).map(([code, name]) => ({ value: c
 export default function TargetingStep() {
     const searchParams = useSearchParams();
     const campaignId = searchParams.get("campaignId");
-    const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);
-    const launchCampaign = useStore((state) => state.launchCampaign);
+    const [creativeFormat, setCreativeFormat] = useState<BannerFormat>("image");
+    const [mediaDimensions, setMediaDimensions] = useState<{ width: number; height: number } | null>(null);
+    const [videoDuration, setVideoDuration] = useState<number | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const createCampaignBanner = useStore((state) => state.createBanner)
-    const isCreating = useStore((state) => state.campaignState.isCreating)
+    const createCampaignVideoBanner = useStore((state) => state.createVideoBanner)
 
     const {
         register,
-        handleSubmit,
-        reset,
         watch,
         setValue,
+        setError,
+        clearErrors,
         formState: { errors },
     } = useForm<BannerFormData>({
         resolver: zodResolver(bannerFormSchema),
-        defaultValues: { name: "", destinationUrl: "" },
+        defaultValues: { name: "", destinationUrl: "", ctaText: "" },
     });
 
     const values = watch();
 
+    useEffect(() => {
+        return () => {
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+        };
+    }, [previewUrl]);
+
+    function selectFormat(nextFormat: BannerFormat) {
+        if (nextFormat === creativeFormat) return;
+        if (values.image instanceof File) {
+            const confirmed = window.confirm("Changing the creative format will remove the selected file. Continue?");
+            if (!confirmed) return;
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            setPreviewUrl(null);
+            setMediaDimensions(null);
+            setVideoDuration(null);
+            setValue("image", undefined as unknown as File, { shouldValidate: true, shouldDirty: true });
+        }
+        clearErrors("ctaText");
+        setCreativeFormat(nextFormat);
+    }
+
+    async function handleFileChange(file: File | undefined) {
+        if (!file) return;
+
+        const matchesFormat = creativeFormat === "image"
+            ? file.type.startsWith("image/")
+            : file.type.startsWith("video/");
+        if (!matchesFormat) {
+            showToaster(`Choose a ${creativeFormat} file for this ad format.`, "error");
+            return;
+        }
+
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        setValue("image", file, { shouldValidate: true, shouldDirty: true });
+        setPreviewUrl(URL.createObjectURL(file));
+        setMediaDimensions(null);
+        setVideoDuration(null);
+
+        try {
+            if (creativeFormat === "image") {
+                setMediaDimensions(await getImageDimensions(file));
+            } else {
+                const metadata = await getVideoMetadata(file);
+                setMediaDimensions({ width: metadata.width, height: metadata.height });
+                setVideoDuration(metadata.duration);
+            }
+        } catch {
+            showToaster(`Unable to read ${creativeFormat} dimensions`, "error");
+        }
+    }
+
     function validate(): boolean {
         const result = bannerFormSchema.safeParse(values);
         if (!result.success) {
-            showToaster('validation error')
-            const fieldErrors: Record<string, string> = {};
             for (const issue of result.error.issues) {
-                fieldErrors[issue.path[0] as string] = issue.message;
                 showToaster(issue.message, 'error')
             }
             return false;
         }
+        if (creativeFormat === "inline_video" && !values.ctaText?.trim()) {
+            const message = "Enter CTA text for the inline video";
+            setError("ctaText", { type: "manual", message });
+            showToaster(message, "error");
+            return false;
+        }
+        clearErrors("ctaText");
         return true;
     }
 
@@ -71,8 +160,25 @@ export default function TargetingStep() {
             throw new Error("campaignId is required to create a banner");
         }
 
+        if (creativeFormat === "inline_video") {
+            const bannerData = data as BannerFormData;
+            const metadata = await getVideoMetadata(bannerData.image);
+            const dimensions = mediaDimensions ?? metadata;
+            await createCampaignVideoBanner(campaignId, {
+                name: bannerData.name,
+                destinationUrl: bannerData.destinationUrl,
+                ctaText: bannerData.ctaText!.trim(),
+                video: bannerData.image,
+                duration: Number(Math.ceil(metadata.duration)),
+                width: dimensions.width.toString(),
+                height: dimensions.height.toString(),
+                type: "inline_video",
+            });
+            return { campaignId };
+        }
+
         const bannerData = data as CreateBannerData;
-        const dimensions = await getImageDimensions(bannerData.image);
+        const dimensions = mediaDimensions ?? await getImageDimensions(bannerData.image);
         const fullData = {
             ...bannerData,
             width: dimensions.width.toString(),
@@ -83,7 +189,39 @@ export default function TargetingStep() {
     }
 
     return (
-        <div>
+        <div className="space-y-6">
+            <section aria-labelledby="banner-format-heading">
+                <div className="mb-4">
+                    <h2 id="banner-format-heading" className="text-lg font-semibold text-white">Choose a creative format</h2>
+                    <p className="text-sm text-gray-500">Select an image or inline video ad to continue.</p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2" role="group" aria-label="Creative format">
+                    {BANNER_FORMATS.map(({ value, title, description, Icon }) => {
+                        const selected = creativeFormat === value;
+                        return (
+                            <button
+                                key={value}
+                                type="button"
+                                aria-pressed={selected}
+                                onClick={() => selectFormat(value)}
+                                className={`flex min-h-28 items-start gap-4 rounded-xl border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${selected ? "border-primary bg-primary/10" : "border-ink-100 bg-light-background hover:border-ink-300"}`}
+                            >
+                                <span className={`flex size-11 shrink-0 items-center justify-center rounded-lg ${selected ? "bg-primary/20 text-primary" : "bg-ink-100 text-gray-500"}`}>
+                                    <Icon className="size-5" aria-hidden="true" />
+                                </span>
+                                <span className="min-w-0 flex-1">
+                                    <span className="flex items-center justify-between gap-2 font-semibold text-white">
+                                        {title}
+                                        <span className={`size-4 rounded-full border ${selected ? "border-primary bg-primary shadow-[inset_0_0_0_3px_#10251d]" : "border-ink-300"}`} aria-hidden="true" />
+                                    </span>
+                                    <span className="mt-1 block text-md leading-5 text-gray-500">{description}</span>
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </section>
+
             <Field label="Banner name" htmlFor="bannerName" error={errors.name?.message}>
                 <Input
                     placeholder="Summer launch hero"
@@ -101,90 +239,62 @@ export default function TargetingStep() {
                     {...register("destinationUrl")}
                 />
             </Field>
-            <div>
-                <label htmlFor="banner-image" className="mb-1 block text-sm font-medium text-white">
-                    Banner image
+            {creativeFormat === "inline_video" && (
+                <Field label="CTA text" htmlFor="ctaText" error={errors.ctaText?.message}>
+                    <Input
+                        id="ctaText"
+                        placeholder="Shop now"
+                        aria-invalid={Boolean(errors.ctaText)}
+                        {...register("ctaText", {
+                            onChange: (event) => {
+                                if (event.target.value.trim()) clearErrors("ctaText");
+                            },
+                        })}
+                    />
+                </Field>
+            )}
+
+            <Field label={creativeFormat === "image" ? "Image creative" : "Inline video creative"} htmlFor="banner-media" error={errors.image?.message}>
+                <label
+                    htmlFor="banner-media"
+                    className="block cursor-pointer rounded-xl border-2 border-dashed border-ink-100 bg-light-background px-5 py-8 text-center transition hover:border-primary"
+                >
+                    <UploadCloud className="mx-auto size-8 text-primary" aria-hidden="true" />
+                    <span className="mt-3 block font-medium text-white">Choose {creativeFormat === "image" ? "an image" : "a video"} file</span>
+                    <span className="mt-1 block text-md text-gray-500">{creativeFormat === "image" ? "Images only" : "Videos only"}</span>
                 </label>
                 <input
-                    id="banner-image"
+                    id="banner-media"
                     type="file"
-                    accept="image/*"
+                    accept={creativeFormat === "image" ? "image/*" : "video/*"}
                     aria-invalid={Boolean(errors.image)}
-                    className="w-full rounded-lg border border-dashed border-gray-600 bg-black/10 px-3 py-3 text-sm text-gray-300 file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
-                    onChange={async (event) => {
-                        const file = event.target.files?.[0];
-                        setValue("image", file as File, { shouldValidate: true });
-                        setImageDimensions(null);
-
-                        if (!file) return;
-
-                        try {
-                            setImageDimensions(await getImageDimensions(file));
-                        } catch {
-                            showToaster("Unable to read image dimensions", "error");
-                        }
+                    className="sr-only"
+                    onChange={(event) => {
+                        void handleFileChange(event.target.files?.[0]);
+                        event.target.value = "";
                     }}
                 />
-                {errors.image && <p className="mt-1 text-xs text-red-500">{errors.image.message}</p>}
-                {imageDimensions && (
-                    <p className="mt-2 text-sm text-green-500">
-                        Dimensions: {imageDimensions.width} x {imageDimensions.height}px
-                    </p>
+                {previewUrl && (
+                    <div className={`mt-4 overflow-hidden rounded-xl border border-gray-600 bg-ink-950 max-w-md`}>
+                        <div className="aspect-video">
+                            {creativeFormat === "image" ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={previewUrl} alt="Selected image creative preview" className="size-full object-contain" />
+                            ) : (
+                                <video src={previewUrl} controls playsInline className="size-full object-contain" />
+                            )}
+                        </div>
+                        {mediaDimensions && (
+                            <p className="px-3 py-2 text-sm text-green-500">
+                                Dimensions: {mediaDimensions.width} × {mediaDimensions.height}px
+                                {creativeFormat === "inline_video" && videoDuration !== null && (
+                                    <> · Duration: {videoDuration.toFixed(2)} seconds</>
+                                )}
+                            </p>
+                        )}
+                    </div>
                 )}
-            </div>
-
-            {/* <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger>
-                    <p aria-expanded={open} className="w-[300px] flex items-center bg-primary text-white py-2 px-3 rounded-full justify-between">
-                        <span className="flex items-center gap-2">{values.geo.length > 0 ? "Select Multiple Locations" : "Select target country..."}</span>
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </p>
-                </PopoverTrigger>
-                <PopoverContent className="w-[300px] p-0">
-                    <Command>
-                        <CommandInput placeholder="Search country or code..." />
-                        <CommandEmpty>No country found.</CommandEmpty>
-                        <CommandGroup className="max-h-[300px] overflow-y-auto">
-                            {COUNTRY_LIST.map((country) => (
-                                <CommandItem
-                                    key={country.value}
-                                    value={country.label}
-                                    onSelect={() => {
-                                        const isSelected = values.geo.some((geo) => geo.code === country.value);
-                                        const nextGeo = isSelected
-                                            ? values.geo.filter((geo) => geo.code !== country.value)
-                                            : [...values.geo, { code: country.value, label: country.label }];
-                                        setValue("geo", nextGeo, { shouldValidate: true });
-                                    }}
-                                >
-                                    <Check className={values?.geo?.some((g) => g.code === country.value) ? "mr-2 h-4 w-4 opacity-100" : "mr-2 h-4 w-4 opacity-0"} />
-                                    {country.label} ({country.value})
-                                </CommandItem>
-                            ))}
-                        </CommandGroup>
-                    </Command>
-                </PopoverContent>
-            </Popover>
-            <Field htmlFor="geo" error={errors.geo?.message}>
-                <GeoSelection selected={values.geo} onRemove={OnREmoveGeo} />
             </Field>
-
-            <Field label="Choose Devices" htmlFor="devices" error={errors.devices?.message} hint="Select which device types this campaign can run on">
-                <DeviceSelection
-                    options={DEVICE_OPTIONS}
-                    selected={values.devices}
-                    onRemove={OnRemoveDevice}
-                    onToggle={onToggleDevice}
-                />
-            </Field> */}
-
-            {/* <Field label="Placements" htmlFor="placements" error={errow4  ch zones this campaign can run in">
-                <CheckboxGroup
-                    options={PLACEMENT_OPTIONS}
-                    selected={placements}
-                    onToggle={(v) => toggle(placements, setPlacements, v)}
-                />
-            </Field> */}
 
             <StepFooter
                 currentStepId={1}

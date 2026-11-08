@@ -15,3 +15,14 @@ export type CreateBannerData = {
     width?: string;
     height?: string;
 };
+
+export type CreateVideoBannerData = {
+    name: string;
+    destinationUrl: string;
+    ctaText: string;
+    video: File;
+    duration: number;
+    width?: string;
+    height?: string;
+    type: string;
+};

@@ -98,15 +98,11 @@ export const createCampaignSlice: StateCreator<Store, [['zustand/immer', never]]
         }));
         try {
             const response = await setCampaigns(campaignId, zoneId);
-            if (response.zonesLinked === 0 && response.zonesFailed === 0) {
-                set((state: { campaigns: any[] }) => ({
-                    campaigns: state.campaigns.map((campaign) =>
-                        campaign.id === campaignId ? { ...campaign, status: "assigned", isRunning: new Date(campaign.startDate).getTime() <= Date.now() && (!campaign.endDate || new Date(campaign.endDate).getTime() >= Date.now()) } : campaign
-                    ),
-                }));
-                showToaster("No zone found matching banner height and width. Campaign has been queued for automatic placement.", "success");
-                return response;
-            }
+            set((state: { campaigns: any[] }) => ({
+                campaigns: state.campaigns.map((campaign) =>
+                    campaign.id === campaignId ? { ...campaign, status: "assigned", isRunning: new Date(campaign.startDate).getTime() <= Date.now() && (!campaign.endDate || new Date(campaign.endDate).getTime() >= Date.now()) } : campaign
+                ),
+            }));
             showToaster("Campaign Launched", "success");
             return response;
         } catch (error) {
@@ -265,10 +261,11 @@ export const createCampaignSlice: StateCreator<Store, [['zustand/immer', never]]
 
         try {
             const campaignSummary = await getCampaignSummary(campaignId)
+            console.log("campaignSummary", campaignSummary)
             set({ campaignReview: campaignSummary })
             return campaignSummary;
         } catch (error) {
-
+            console.error("Error fetching campaign summary:", error);
         } finally {
             set((state: { campaignState: any }) => ({
                 campaignState: {
