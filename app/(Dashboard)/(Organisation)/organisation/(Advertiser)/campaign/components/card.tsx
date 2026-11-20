@@ -128,12 +128,6 @@ export default function CampaignCard({ items }: CampaignCardProps) {
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {items.map((campaign) => {
                         const isDraft = campaign.status?.toUpperCase() === "DRAFT";
-                        const statusLabel = campaign.status?.toUpperCase() === "ACTIVE"
-                            ? campaign.isSchedule ? "Scheduled" : "Active"
-                            : campaign.status?.toUpperCase() === "DRAFT" ? "Draft" : formatLabel(campaign.status);
-                        const budget = campaign.budgetAmount
-                            ? `$${campaign.budgetAmount.toLocaleString()} ${campaign.budgetType === "daily" ? "/ day" : "total"}`
-                            : "Not set";
 
                         return (
                             <Card key={campaign.id} className="border border-gray-700 bg-transparent text-white">
@@ -143,22 +137,19 @@ export default function CampaignCard({ items }: CampaignCardProps) {
                                             <CardTitle className="truncate text-base text-white">
                                                 {campaign.campaignName || "Untitled campaign"}
                                             </CardTitle>
-                                            <p className="mt-1 text-sm text-gray-400">{formatLabel(campaign.objective)}</p>
+                                            {/* <p className="mt-1 text-sm text-gray-400">{formatLabel(campaign.objective)}</p> */}
                                         </div>
-                                        <span
+                                        {/* <span
                                             className={cn(
                                                 "shrink-0 rounded-full px-2 py-1 text-xs capitalize",
-                                                statusLabel === "Active" || statusLabel === "Scheduled"
-                                                    ? "bg-primary/20 text-primary"
-                                                    : "bg-white/10 text-gray-300"
                                             )}
                                         >
                                             {statusLabel}
-                                        </span>
+                                        </span> */}
                                     </div>
                                 </CardHeader>
                                 <CardContent className="grid gap-4 pt-4 sm:grid-cols-2">
-                                    <Detail label="Budget" value={budget} />
+                                    {/* <Detail label="Budget" value={budget} /> */}
                                     <Detail label="Schedule" value={`${formatDate(campaign.startDate)} - ${formatDate(campaign.endDate)}`} />
                                     <Detail label="Locations" value={formatGeo(campaign.geo)} />
                                     <Detail label="Devices" value={formatDevices(campaign.devices)} />
@@ -184,16 +175,16 @@ export default function CampaignCard({ items }: CampaignCardProps) {
                                                         <DetailSection title="Overview">
                                                             <dl className="grid gap-5 sm:grid-cols-2">
                                                                 <Detail label="Campaign name" value={campaign.campaignName} />
-                                                                <Detail label="Status" value={<CampaignStatus status={campaign.status} isSchedule={campaign.isSchedule} />} />
-                                                                <Detail label="Objective" value={formatLabel(campaign.objective)} />
+                                                                {/* <Detail label="Status" value={<CampaignStatus status={campaign.status} isSchedule={campaign.isSchedule} />} /> */}
+                                                                {/* <Detail label="Objective" value={formatLabel(campaign.objective)} /> */}
                                                             </dl>
                                                         </DetailSection>
                                                         <DetailSection title="Budget and schedule">
                                                             <dl className="grid gap-5 sm:grid-cols-2">
                                                                 <Detail label="Budget type" value={formatLabel(campaign.budgetType)} />
-                                                                <Detail label="Budget amount" value={budget} />
+                                                                {/* <Detail label="Budget amount" value={budget} /> */}
                                                                 <Detail label="Pacing" value={formatLabel(campaign.pacing)} />
-                                                                <Detail label="Delivery" value={campaign.isSchedule ? "Scheduled delivery" : "Immediate delivery"} />
+                                                                {/* <Detail label="Delivery" value={campaign.isSchedule ? "Scheduled delivery" : "Immediate delivery"} /> */}
                                                                 <Detail label="Start date" value={formatDate(campaign.startDate)} />
                                                                 <Detail label="End date" value={formatDate(campaign.endDate)} />
                                                             </dl>

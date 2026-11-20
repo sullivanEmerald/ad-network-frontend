@@ -1,8 +1,8 @@
-import { Publisher } from "@/types/publisher"
+// import { Publisher } from "@/types/publisher"
 import Button from "@/components/common/button";
 
 type PublisherProps = {
-    publisher: Publisher;
+    publisher: any;
     onViewInventory: (id: string) => void;
 };
 
