@@ -57,7 +57,7 @@ export default function AdImageCard({ ad, isActive = true }: AdImageCardProps) {
 
         observer.observe(el);
         return () => observer.disconnect();
-    }, [ad.id, ad.tracking.impression]);
+    }, [ad.id, ad.tracking?.impression]);
 
     // Reset if ad identity changes
     useEffect(() => {
@@ -74,7 +74,7 @@ export default function AdImageCard({ ad, isActive = true }: AdImageCardProps) {
     return (
         <div
             ref={rootRef}
-            className="relative mx-auto max-w-md overflow-hidden rounded-lg bg-black shadow-lg"
+            className="relative mx-auto max-w-md overflow-hidden rounded-lg shadow-lg"
         >
             <img
                 src={ad.imageUrl}

@@ -7,8 +7,10 @@ import { ReviveAdPayload } from './types/ad';
 import { loadNext } from './service/adsRequests';
 import AdImageCard from "./components/adImageCard"
 
+type FeedAd = ReviveAdPayload & { clientKey: string }
+
 export default function FeedPage() {
-    const [ads, setAds] = useState<ReviveAdPayload[]>([]);
+    const [ads, setAds] = useState<FeedAd[]>([]);
     const [activeId, setActiveId] = useState<string | null>(null);
     const itemRefs = useRef<Map<string, HTMLElement>>(new Map());
 
@@ -16,7 +18,7 @@ export default function FeedPage() {
         try {
             const next = await loadNext();
             if (!next) return;
-            setAds((prev) => [...prev, next]);
+            setAds((prev) => [...prev, { ...next, clientKey: crypto.randomUUID() },]);
         } catch (err) {
             console.error('Error loading ad:', err);
         }
@@ -54,17 +56,17 @@ export default function FeedPage() {
     return (
         <main className="space-y-6">
             {ads.map((ad) => {
-                const key = ad.tracking.impression[0] ?? ad.videoUrl;
+                const key = ad.clientKey;
                 return (
-                    <>
-                        <div key={ad.id} ref={setItemRef(key)} data-ad-key={key}>
-                            {ad.type === 'video' ? (
-                                <AdVideoPlayer ad={ad} isActive={activeId === key} onAdEnded={loadAd} />
-                            ) : (
-                                <AdImageCard ad={ad} isActive={activeId === key} />
-                            )}
-                        </div>
-                    </>
+
+                    <div key={key} ref={setItemRef(key)} data-ad-key={key}>
+                        {ad.type === 'video' ? (
+                            <AdVideoPlayer ad={ad} isActive={activeId === key} onAdEnded={loadAd} />
+                        ) : (
+                            <AdImageCard ad={ad} isActive={activeId === key} />
+                        )}
+                    </div>
+
                 );
             })}
         </main>

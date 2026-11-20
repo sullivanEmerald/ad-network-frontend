@@ -1,5 +1,5 @@
-import { NavigationBar } from "./navigation"
-import { Footer } from "./footer"
+import { Navigation } from "../layout/Navigation"
+import { Footer } from "../layout/Footer"
 
 interface LayoutProps {
     children: React.ReactNode
@@ -7,9 +7,9 @@ interface LayoutProps {
 
 export function AppLayout({ children }: LayoutProps) {
     return (
-        <div className="min-h-screen bg-background flex flex-col">
-            <NavigationBar />
-            <main className="mt-30 sm:mt-40">
+        <div className="">
+            <Navigation />
+            <main className="">
                 {children}
             </main>
             <footer className="mt-auto">

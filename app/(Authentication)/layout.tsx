@@ -1,5 +1,6 @@
 import AuthInformation from "@/components/authentication/information"
 import AuthStaticGuard from "@/guards/auth-guard"
+import Header from "@/components/layout/Header"
 export default function AuthenticationLayout({
     children,
 }: {
@@ -7,11 +8,12 @@ export default function AuthenticationLayout({
 }) {
     return (
         <AuthStaticGuard>
-            <div className="relative min-h-screen bg-background">
-                <AuthInformation />
-                <main className="flex min-h-screen w-full flex-col justify-center px-6 py-12 sm:px-8 lg:pl-[45%] lg:pr-12">
-                    <div className="mx-auto w-full max-w-md">{children}</div>
+            <div className="relative min-h-screen">
+                <Header />
+                <main className="px-6 pb-20 pt-8 lg:px-25 lg:pb-10 lg:pt-10">
+                    {children}
                 </main>
+                <AuthInformation />
             </div>
         </AuthStaticGuard>
     )

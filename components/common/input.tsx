@@ -11,13 +11,13 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         return (
             <div className="">
                 {label && (
-                    <label className="block mb-1 text-sm font-medium text-white">
+                    <label className="block text-md text-black font-bold">
                         {label}
                     </label>
                 )}
                 <input
                     ref={ref}
-                    className={`w-full border border-gray-600 placeholder:text-gray-500 rounded-lg px-2 py-2 bg-transparent text-white ${className}`}
+                    className={`w-full border border-gray-600 placeholder:text-gray-500 rounded-sm px-2 py-2 bg-gray-100 text-white ${className}`}
                     {...props}
                 />
                 {error && (

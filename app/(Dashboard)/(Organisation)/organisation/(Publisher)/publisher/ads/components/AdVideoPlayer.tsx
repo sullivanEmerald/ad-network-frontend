@@ -213,8 +213,8 @@ export default function AdVideoPlayer({
                 key={ad.videoUrl}
                 ref={videoRef}
                 src={ad.videoUrl}
-                width={ad.width}
-                height={ad.height}
+                width={300}
+                height={300}
                 autoPlay={false}
                 muted={muted}
                 playsInline

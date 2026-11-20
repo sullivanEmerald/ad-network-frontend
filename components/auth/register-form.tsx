@@ -59,7 +59,7 @@ export default function RegisterForm() {
     };
 
     return (
-        <div className="w-full mx-auto md:w-[90%]">
+        <div className="w-full sm:w-[35%] flex flex-col">
             <div className="mb-4 flex flex-col items-center">
                 <span className="text-primary font-bold text-lg">Start advertising or monetizing your audience.</span>
             </div>
@@ -95,40 +95,40 @@ export default function RegisterForm() {
                 {accountType === "advertiser" ? (
                     <div className="space-y-4">
                         <div>
-                            <p className="font-semibold text-white">Advertiser details</p>
+                            <p className="font-semibold text-black">Advertiser details</p>
                             <p className="mt-1 text-xs text-gray-500">Tell us about the business you want to advertise.</p>
                         </div>
                         <div>
-                            <Input id="advertiserName" label="Advertiser name / Company" placeholder="Acme Inc." {...register("advertiserName")} />
+                            <Input id="advertiserName" label="Advertiser name / Company" placeholder="Acme Inc." {...register("advertiserName")} className="border-none" />
                             {errors.advertiserName && <span className="text-xs text-red-500 mt-1 block">{errors.advertiserName.message}</span>}
                         </div>
                         <div>
-                            <Input id="advertiserEmail" type="email" label="Advertiser email" placeholder="hello@acme.com" {...register("advertiserEmail")} />
+                            <Input id="advertiserEmail" type="email" label="Advertiser email" placeholder="hello@acme.com" {...register("advertiserEmail")} className="border-none" />
                             {errors.advertiserEmail && <span className="text-xs text-red-500 mt-1 block">{errors.advertiserEmail.message}</span>}
                         </div>
                     </div>
                 ) : (
                     <div className="space-y-4">
                         <div>
-                            <p className="font-semibold text-white">Publisher details</p>
+                            <p className="font-semibold text-black">Publisher details</p>
                             <p className="mt-1 text-xs text-gray-500">Share your publication details so advertisers can find you.</p>
                         </div>
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <Input id="publisherName" label="Publisher name" placeholder="TechBlog" {...register("publisherName")} />
+                                <Input id="publisherName" label="Publisher name" placeholder="TechBlog" {...register("publisherName")} className="border-none" />
                                 {errors.publisherName && <span className="text-xs text-red-500 mt-1 block">{errors.publisherName.message}</span>}
                             </div>
                             <div>
-                                <Input id="contactName" label="Contact name" placeholder="John Doe" {...register("contactName")} />
+                                <Input id="contactName" label="Contact name" placeholder="John Doe" {...register("contactName")} className="border-none" />
                                 {errors.contactName && <span className="text-xs text-red-500 mt-1 block">{errors.contactName.message}</span>}
                             </div>
                         </div>
                         <div>
-                            <Input id="emailAddress" type="email" label="Email address" placeholder="john@techblog.com" {...register("emailAddress")} />
+                            <Input id="emailAddress" type="email" label="Email address" placeholder="john@techblog.com" {...register("emailAddress")} className="border-none" />
                             {errors.emailAddress && <span className="text-xs text-red-500 mt-1 block">{errors.emailAddress.message}</span>}
                         </div>
                         <div>
-                            <Input id="website" type="url" label="Website" placeholder="https://techblog.com" {...register("website")} />
+                            <Input id="website" type="url" label="Website" placeholder="https://techblog.com" {...register("website")} className="border-none" />
                             {errors.website && <span className="text-xs text-red-500 mt-1 block">{errors.website.message}</span>}
                         </div>
                     </div>
@@ -141,6 +141,7 @@ export default function RegisterForm() {
                         autoComplete="new-password"
                         required
                         placeholder="Enter your password"
+                        className="border-none"
                         {...register("password")}
                     />
                     {errors.password && <span className="text-xs text-red-500 mt-1 block">{errors.password.message}</span>}
@@ -154,6 +155,7 @@ export default function RegisterForm() {
                         required
                         placeholder="Confirm your password"
                         {...register("confirmPassword")}
+                        className="border-none"
                     />
                     {errors.confirmPassword && <span className="text-xs text-red-500 mt-1 block">{errors.confirmPassword.message}</span>}
                 </div>
