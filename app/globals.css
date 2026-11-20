@@ -83,6 +83,7 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --font-brand: var(--font-roboto);
 }
 
 .dark {
@@ -126,7 +127,8 @@
 
   body {
     @apply bg-background text-foreground;
-    position: relative
+    position: relative;
+    font-family: var(--font-brand), Arial, sans-serif;
   }
 
   html {

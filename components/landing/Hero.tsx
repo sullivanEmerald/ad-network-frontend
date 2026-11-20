@@ -28,7 +28,7 @@ function Hero() {
                     </div>
 
                     <Placeholder className="min-h-[400px] lg:min-h-[510px] flex items-center justify-center">
-                        <div className="w-full border px-8">
+                        <div className="w-full px-8">
                             <div className="rounded-3xl bg-white p-6 text-left shadow-lg">
                                 <div className="mb-8 flex items-center justify-between">
                                     <span className="text-sm font-bold">Campaign overview</span>
