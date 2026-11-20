@@ -59,10 +59,7 @@ export default function RegisterForm() {
     };
 
     return (
-        <div className="w-full sm:w-[35%] flex flex-col">
-            <div className="mb-4 flex flex-col items-center">
-                <span className="text-primary font-bold text-lg">Start advertising or monetizing your audience.</span>
-            </div>
+        <div className="w-full lg:max-w-[35%] space-y-3 flex flex-col">
             <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] p-1.5">
                 <div className="grid grid-cols-2 gap-1" role="tablist" aria-label="Choose account type">
                     <button
@@ -70,7 +67,7 @@ export default function RegisterForm() {
                         role="tab"
                         aria-selected={accountType === "advertiser"}
                         onClick={() => setValue("accountType", "advertiser", { shouldValidate: true })}
-                        className={`flex items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold transition ${accountType === "advertiser" ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-gray-400 hover:bg-white/5 hover:text-white"}`}
+                        className={`flex items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold transition ${accountType === "advertiser" ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-gray-400 hover:bg-white/5 hover:text-black"}`}
                     >
                         <Building2 className="size-4" />
                         Advertiser
@@ -80,7 +77,7 @@ export default function RegisterForm() {
                         role="tab"
                         aria-selected={accountType === "publisher"}
                         onClick={() => setValue("accountType", "publisher", { shouldValidate: true })}
-                        className={`flex items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold transition ${accountType === "publisher" ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-gray-400 hover:bg-white/5 hover:text-white"}`}
+                        className={`flex items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold transition ${accountType === "publisher" ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-gray-400 hover:bg-white/5 hover:text-black"}`}
                     >
                         <RadioTower className="size-4" />
                         Publisher

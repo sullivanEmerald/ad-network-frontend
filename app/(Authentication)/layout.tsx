@@ -10,10 +10,13 @@ export default function AuthenticationLayout({
         <AuthStaticGuard>
             <div className="relative min-h-screen">
                 <Header />
-                <main className="px-6 pb-20 pt-8 lg:px-25 lg:pb-10 lg:pt-10">
-                    {children}
-                </main>
-                <AuthInformation />
+                <div className="flex items-center justify-center lg:block">
+                    <main className="px-6 pb-20 pt-8 lg:px-25 lg:pb-10 lg:pt-10">
+                        {children}
+                    </main>
+                    <AuthInformation />
+                </div>
+
             </div>
         </AuthStaticGuard>
     )
