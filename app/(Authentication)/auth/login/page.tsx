@@ -60,7 +60,7 @@ export default function LoginPage() {
 
     return (
         <section className="">
-            <div className="w-full lg:max-w-[40%] space-y-3">
+            <div className="w-full lg:max-w-[35%] space-y-3">
                 <h2 className="text-2xl font-bold"><span className="text-primary">Log in{" "}</span>to your <AppLogo /> for Business account</h2>
                 <p className="text-muted-foreground">Enter here to access custex Ads Manager, Business Center and custex One.
                 </p>
