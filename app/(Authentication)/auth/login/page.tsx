@@ -60,7 +60,7 @@ export default function LoginPage() {
     return (
         <section className="">
             <div className="w-full lg:max-w-[35%] space-y-3">
-                <h2 className="text-2xl font-bold"><span className="text-primary">Log in{" "}</span>to your TikTok for Business account</h2>
+                <h2 className="text-2xl font-bold"><span className="text-primary">Log in{" "}</span>to your CustEX for Business account</h2>
                 <p className="text-muted-foreground">Enter here to access custex Ads Manager, Business Center and custex One.
                 </p>
                 <p className="text-muted-foreground">Don't have an account? <Link href={authenticationEndpoints.register} className="text-primary text-bold">Create one</Link></p>
