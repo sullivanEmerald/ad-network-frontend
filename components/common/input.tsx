@@ -17,7 +17,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
                 )}
                 <input
                     ref={ref}
-                    className={`w-full border border-gray-600 placeholder:text-gray-500 rounded-sm px-2 py-2 bg-gray-100 text-white ${className}`}
+                    className={`w-full border border-gray-600 placeholder:text-gray-400 rounded-sm px-2 py-2 bg-gray-100 text-black ${className}`}
                     {...props}
                 />
                 {error && (

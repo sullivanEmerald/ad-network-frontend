@@ -12,7 +12,7 @@ export function Field({ label, htmlFor, error, hint, children }: FieldProps) {
     return (
         <div className="mb-5">
             {label && (
-                <label htmlFor={htmlFor} className="mb-1 block text-md text-gray-400">
+                <label htmlFor={htmlFor} className="mb-1 block text-md text-black/80 font-medium">
                     {label}
                 </label>
             )}

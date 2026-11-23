@@ -37,20 +37,20 @@ export default function CampaignsPage() {
                 <StatCard title="Total Campaigns" value={"10"} />
                 <StatCard title="Active Campaigns" value={"5"} />
                 <StatCard
-                    title="Impressions"
+                    title="total number of impressions"
                     value="0"
                 />
                 <StatCard
-                    title="Clicks"
+                    title="total number of clicks"
                     value="0"
                 />
                 <StatCard
-                    title="CTR"
+                    title="total CTR"
                     value="0%"
                 />
 
                 <StatCard
-                    title="Spend"
+                    title="total Spend"
                     value="$0"
                 />
             </div>

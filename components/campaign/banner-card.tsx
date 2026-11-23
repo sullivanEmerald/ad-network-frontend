@@ -17,15 +17,15 @@ export default function BannerCard({ banner, onDelete, isDeleting = false }: Ban
     return (
         <Card className="overflow-hidden border border-white/10 bg-light-background/80 text-white shadow-lg shadow-black/10 transition-colors hover:border-primary/50 !px-0 !py-0">
             <div className="relative aspect-[16/10] overflow-hidden bg-black/30 ">
-                {banner.type === "video" ? (
+                {banner.type.toLowerCase() === "video" ? (
                     <>
-                        <video src={banner.src} className="h-full w-full object-cover" muted loop playsInline />
+                        <video src={banner.assetUrl} className="h-full w-full object-cover" controls muted loop playsInline />
                         <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-black/65 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
                             <Play className="size-3 fill-current" /> Video
                         </span>
                     </>
                 ) : (
-                    <img src={banner.src} alt={banner.name} className="h-full w-full object-cover" />
+                    <img src={banner.assetUrl} alt={banner.name} className="h-full w-full object-cover aspect-[16/10]" />
                 )}
             </div>
             <CardContent className="space-y-2 p-4">

@@ -78,6 +78,7 @@ export const getStatusColor = (status: string) => {
         case "workers":
             return '#FCB404';
         case "completed":
+        case "active":
             return "#2E7D32";
         case "applied":
             return "#B91C1C";

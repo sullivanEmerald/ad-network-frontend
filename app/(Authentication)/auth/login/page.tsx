@@ -61,7 +61,7 @@ export default function LoginPage() {
         <section className="">
             <div className="w-full lg:max-w-[35%] space-y-3">
                 <h2 className="text-2xl font-bold"><span className="text-primary">Log in{" "}</span>to your TikTok for Business account</h2>
-                <p className="text-muted-foreground">Enter here to access TikTok Ads Manager, Business Center and TikTok One.
+                <p className="text-muted-foreground">Enter here to access custex Ads Manager, Business Center and custex One.
                 </p>
                 <p className="text-muted-foreground">Don't have an account? <Link href={authenticationEndpoints.register} className="text-primary text-bold">Create one</Link></p>
                 <form className="w-full flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -73,7 +73,7 @@ export default function LoginPage() {
                             autoComplete="email"
                             {...register("email")}
                             required
-                            placeholder="Enter your email"
+                            placeholder="enter your email"
                             className="border-none py-2"
                         />
                         {errors.email && <span className="text-xs text-red-500 block">{errors.email.message}</span>}
@@ -86,7 +86,7 @@ export default function LoginPage() {
                             autoComplete="current-password"
                             {...register("password")}
                             required
-                            placeholder="Enter your password"
+                            placeholder="enter your password"
                             className="border-none py-2"
                         />
                         <button

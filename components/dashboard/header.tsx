@@ -72,15 +72,15 @@ export default function UserHeader() {
     };
 
     return (
-        <header className="w-full flex items-center bg-light-background justify-between shadow px-4 py-3 sticky border-b border-gray-800 backdrop-blur-md top-0 z-30 h-16">
+        <header className="w-full flex items-center bg-white shadow sticky border-b backdrop-blur-md justify-between shadow px-4 py-3 sticky border-b border-gray-200 backdrop-blur-md top-0 z-30 h-16">
             <div className="flex items-center gap-3">
-                <span className="text-lg font-bold text-gray-400 tracking-tight">Hello, Sullivan Amadike</span>
+                <span className="text-lg font-bold text-gray-400 tracking-tight">Hi, Welcome Back</span>
             </div>
             <div className="flex items-center gap-6">
-                <button className="relative p-2 rounded-full hover:bg-gray-200 transition focus:outline-none focus:ring-2 focus:ring-primary" title="Notifications">
+                {/* <button className="relative p-2 rounded-full hover:bg-gray-200 transition focus:outline-none focus:ring-2 focus:ring-primary" title="Notifications">
                     <FaBell size={20} className="text-gray-500" />
                     <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-                </button>
+                </button> */}
                 <Popover>
                     <PopoverTrigger >
                         <div className="flex items-center gap-2 cursor-pointer">

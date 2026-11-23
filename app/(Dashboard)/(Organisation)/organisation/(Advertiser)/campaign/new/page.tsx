@@ -86,7 +86,7 @@ export default function Campaign() {
                 >
                     <DatePicker
                         id="startDate"
-                        className="text-white"
+                        className="text-black"
                         {...register("startDate")}
                     />
                 </Field>
@@ -97,7 +97,7 @@ export default function Campaign() {
                 >
                     <DatePicker
                         id="endDate"
-                        className="text-white"
+                        className="text-black"
                         {...register("endDate")}
                     />
                 </Field>

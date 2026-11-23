@@ -27,8 +27,8 @@ export function WizardStepper() {
                     <li key={step.key} className="flex items-center gap-2 flex-1">
                         <Link
                             href={href}
-                            className={`flex items-center gap-2 text-gray-300 text-sm sm:text-md w-full py-2 border-b-2 ${isActive
-                                && "border-primary text-ink-900 text-md"
+                            className={`flex items-center gap-2 text-black text-sm sm:text-lg w-full py-2 border-b-2 ${isActive
+                                && "border-primary text-black "
 
                                 }`}
                         >

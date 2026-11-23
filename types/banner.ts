@@ -6,6 +6,7 @@ export type Banner = {
     width: number;
     height: number;
     destinationUrl?: string;
+    assetUrl: string;
 };
 
 export type CreateBannerData = {

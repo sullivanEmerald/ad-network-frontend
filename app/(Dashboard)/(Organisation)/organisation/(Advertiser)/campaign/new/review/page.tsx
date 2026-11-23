@@ -118,7 +118,7 @@ export default function ReviewStep() {
                         <div className="mb-6 flex items-start justify-between gap-4">
                             <div>
                                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Launch summary</p>
-                                <h2 className="mt-2 text-xl font-semibold">{campaignReview?.campaign.campaignName}</h2>
+                                <h2 className="mt-2 text-xl font-semibold text-black">{campaignReview?.campaign.campaignName}</h2>
                             </div>
                             <Rocket className="h-5 w-5 text-primary" />
                         </div>
@@ -136,7 +136,7 @@ export default function ReviewStep() {
                                     await launchCampaign(campaignId)
                                     router.push(organisationEndpoints.campaigns)
                                 }}
-                                className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-ink-950 transition hover:bg-primary/80 disabled:cursor-not-allowed disabled:opacity-40"
+                                className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-ink-950 transition hover:bg-primary/80 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                             >
                                 {isCreatingCampaign ? (
                                     <div className="flex items-center gap-2">
@@ -148,7 +148,7 @@ export default function ReviewStep() {
                             </button>
                             <button
                                 type="button"
-                                disabled={isStoringCampaign || isLoading || isCreatingCampaign}
+                                disabled={isStoringCampaign || isLoading || isCreatingCampaign || true}
                                 onClick={async () => {
                                     if (!campaignId) return;
                                     try {
@@ -193,13 +193,13 @@ function WarningCallout({ rule, onDismiss }: { rule: CrossFieldRule; onDismiss: 
 
 function ReviewSection({ icon: Icon, title, onAction, children }: { icon: typeof LayoutGrid; title: string; onAction: () => void; children: React.ReactNode }) {
     return (
-        <section className="rounded-xl bg-light-background p-5 sm:p-6">
+        <section className="rounded-xl border border-ink-300 p-5 sm:p-6">
             <div className="mb-6 flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/15 text-emerald-800"><Icon className="h-4 w-4" /></span>
-                    <h2 className="font-semibold text-white">{title}</h2>
+                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-light-background text-white"><Icon className="h-4 w-4" /></span>
+                    <h2 className="font-semibold text-black">{title}</h2>
                 </div>
-                <button type="button" onClick={onAction} className="flex items-center gap-1 text-xs font-semibold text-white hover:text-signal-600"><Pencil className="h-3.5 w-3.5" />Edit</button>
+                <button type="button" onClick={onAction} className="flex items-center gap-1 text-xs font-semibold text-black hover:text-signal-600"><Pencil className="h-3.5 w-3.5" />Edit</button>
             </div>
             {children}
         </section>
@@ -207,7 +207,7 @@ function ReviewSection({ icon: Icon, title, onAction, children }: { icon: typeof
 }
 
 function Detail({ label, value }: { label: string; value: string | undefined | Date }) {
-    return <div><p className="text-sm text-gray-500">{label}</p><p className="mt-1 text-md font-semibold text-white capitalize">{value instanceof Date ? formatDate(value) : value ?? "Not set"}</p></div>;
+    return <div><p className="text-sm text-gray-500">{label}</p><p className="mt-1 text-md font-semibold text-black capitalize">{value instanceof Date ? formatDate(value) : value ?? "Not set"}</p></div>;
 }
 
 function ChipDetail({ label, values }: { label: string; values: string[] }) {
@@ -215,7 +215,7 @@ function ChipDetail({ label, values }: { label: string; values: string[] }) {
 }
 
 function SummaryRow({ icon: Icon, label, value }: { icon: typeof CalendarDays; label: string; value: string }) {
-    return <div className="flex items-center gap-3"><Icon className="h-4 w-4 shrink-0 text-primary" /><div><p className="text-sm text-gray-500">{label}</p><p className="text-md font-semibold text-white capitalize">{value}</p></div></div>;
+    return <div className="flex items-center gap-3"><Icon className="h-4 w-4 shrink-0 text-primary" /><div><p className="text-sm text-gray-500">{label}</p><p className="text-md font-semibold text-black capitalize">{value}</p></div></div>;
 }
 
 function Notice({ title, children }: { title: string; children: React.ReactNode }) {

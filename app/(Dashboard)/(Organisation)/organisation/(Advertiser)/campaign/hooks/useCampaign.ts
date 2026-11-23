@@ -11,25 +11,20 @@ export const useCampaign = () => {
     })))
 
     const activeCampaigns = useMemo(() => {
-        return campaigns.filter((campaign) => campaign.status?.toLowerCase() === "assigned" && campaign.isRunning)
+        return campaigns.filter((campaign) => campaign.status?.toLowerCase() === "active" && campaign.isRunning)
     }, [campaigns])
 
     const scheduledCampaigns = useMemo(() => {
-        return campaigns.filter((campaign) => campaign.status?.toLowerCase() === "assigned" && !campaign.isRunning)
+        return campaigns.filter((campaign) => campaign.status?.toLowerCase() === "active" && !campaign.isRunning)
     }, [campaigns])
 
-    const queuedCampaigns = useMemo(() => {
-        return campaigns.filter((campaign) => campaign.status?.toLowerCase() === "queued")
+    const pausedCampaigns = useMemo(() => {
+        return campaigns.filter((campaign) => campaign.status?.toLowerCase() === "paused")
     }, [campaigns])
 
     const completedCampaigns = useMemo(() => {
         return campaigns.filter((campaign) => campaign.status?.toLowerCase() === "completed" && !campaign.isRunning)
     }, [campaigns])
-
-    const storedCampaigns = useMemo(() => {
-        return campaigns.filter((campaign) => campaign.status?.toLowerCase() === "stored")
-    }, [campaigns])
-
 
 
     return {
@@ -38,12 +33,10 @@ export const useCampaign = () => {
         totalActiveCampaigns: activeCampaigns.length,
         scheduledCampaigns,
         totalScheduledCampaigns: scheduledCampaigns.length,
-        queuedCampaigns,
-        totalQueuedCampaigns: queuedCampaigns.length,
+        pausedCampaigns,
+        totalPausedCampaigns: pausedCampaigns.length,
         completedCampaigns,
         totalCompletedCampaigns: completedCampaigns.length,
-        storedCampaigns,
-        totalStoredCampaigns: storedCampaigns.length,
         campaigns,
         totalCampaigns: campaigns.length,
         isloading

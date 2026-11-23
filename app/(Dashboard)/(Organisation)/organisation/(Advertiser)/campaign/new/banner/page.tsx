@@ -192,7 +192,7 @@ export default function TargetingStep() {
         <div className="space-y-6">
             <section aria-labelledby="banner-format-heading">
                 <div className="mb-4">
-                    <h2 id="banner-format-heading" className="text-lg font-semibold text-white">Choose a creative format</h2>
+                    <h2 id="banner-format-heading" className="text-lg font-semibold text-black">Choose a creative format</h2>
                     <p className="text-sm text-gray-500">Select an image or inline video ad to continue.</p>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2" role="group" aria-label="Creative format">
@@ -204,13 +204,13 @@ export default function TargetingStep() {
                                 type="button"
                                 aria-pressed={selected}
                                 onClick={() => selectFormat(value)}
-                                className={`flex min-h-28 items-start gap-4 rounded-xl border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${selected ? "border-primary bg-primary/10" : "border-ink-100 bg-light-background hover:border-ink-300"}`}
+                                className={`flex min-h-28 items-start gap-4 rounded-xl border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${selected ? "border-primary bg-primary/10" : "border-ink-100 hover:border-ink-300"}`}
                             >
                                 <span className={`flex size-11 shrink-0 items-center justify-center rounded-lg ${selected ? "bg-primary/20 text-primary" : "bg-ink-100 text-gray-500"}`}>
                                     <Icon className="size-5" aria-hidden="true" />
                                 </span>
                                 <span className="min-w-0 flex-1">
-                                    <span className="flex items-center justify-between gap-2 font-semibold text-white">
+                                    <span className={`flex items-center justify-between gap-2 font-semibold text-black`}>
                                         {title}
                                         <span className={`size-4 rounded-full border ${selected ? "border-primary bg-primary shadow-[inset_0_0_0_3px_#10251d]" : "border-ink-300"}`} aria-hidden="true" />
                                     </span>
@@ -257,10 +257,10 @@ export default function TargetingStep() {
             <Field label={creativeFormat === "image" ? "Image creative" : "Inline video creative"} htmlFor="banner-media" error={errors.image?.message}>
                 <label
                     htmlFor="banner-media"
-                    className="block cursor-pointer rounded-xl border-2 border-dashed border-ink-100 bg-light-background px-5 py-8 text-center transition hover:border-primary"
+                    className="block cursor-pointer rounded-xl border-2 border-dashed border-ink-100 px-5 py-8 text-center transition hover:border-primary"
                 >
                     <UploadCloud className="mx-auto size-8 text-primary" aria-hidden="true" />
-                    <span className="mt-3 block font-medium text-white">Choose {creativeFormat === "image" ? "an image" : "a video"} file</span>
+                    <span className="mt-3 block font-medium text-black">Choose {creativeFormat === "image" ? "an image" : "a video"} file</span>
                     <span className="mt-1 block text-md text-gray-500">{creativeFormat === "image" ? "Images only" : "Videos only"}</span>
                 </label>
                 <input

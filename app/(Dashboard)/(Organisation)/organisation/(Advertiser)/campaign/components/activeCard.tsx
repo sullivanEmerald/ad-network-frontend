@@ -30,18 +30,18 @@ function Detail({ label, value }: { label: string; value: React.ReactNode }) {
     return (
         <div className="space-y-1">
             <dt className="text-xs uppercase tracking-wide text-gray-400">{label}</dt>
-            <dd className="text-sm text-white">{value || "Not set"}</dd>
+            <dd className="text-sm text-black">{value || "Not set"}</dd>
         </div>
     );
 }
 
 function Metric({ icon: Icon, value }: { icon: React.ElementType; value: string }) {
     return (
-        <div className="flex min-w-0 items-center gap-2">
-            <Icon aria-hidden="true" className="size-4 shrink-0 text-primary" />
+        <div className="flex min-w-0 items-center gap-1">
+            <Icon aria-hidden="true" className="size-4 shrink-0 text-gray-500" />
             <div className="min-w-0">
                 {/* <p className="truncate text-[11px] uppercase tracking-wide text-gray-400">{label}</p> */}
-                <p className="truncate text-sm font-semibold text-white">{value}</p>
+                <p className="truncate text-sm font-semibold text-gray-900">{value}</p>
             </div>
         </div>
     );
@@ -78,17 +78,17 @@ export default function ActiveCard({ items }: CampaignCardProps) {
                             : "Not set";
 
                         return (
-                            <Card key={campaign.id} className="border border-gray-700 bg-light-background text-white">
+                            <Card key={campaign.id} className="border border-gray-200 shadow-sm text-black">
                                 <CardHeader className="gap-3 border-b border-gray-700">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="min-w-0">
-                                            <CardTitle className="truncate text-base text-white">
+                                            <CardTitle className="truncate text-black">
                                                 {campaign.campaignName || "Untitled campaign"}
                                             </CardTitle>
                                             {/* <p className="mt-1 text-sm text-gray-400">{formatLabel(campaign.objective)}</p> */}
                                         </div>
                                         <span
-                                            className="shrink-0 rounded-full px-2 py-1 text-xs"
+                                            className="shrink-0 rounded-full px-2 py-1 text-xs text-white"
                                             style={{ backgroundColor: getStatusColor(campaign.status?.toLowerCase() || "") }}
                                         >
                                             {statusLabel}
